@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,漏洞," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="*郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。  又是一个神不知鬼不觉盗取用户隐私信息的漏洞，用户实惨。。。 StrangHogg漏洞是一个存在于Android多任务系统中的应用漏洞。攻击者通过设置AndroidManifest.xml文件中组件的android:taskAffinity属性即可利用此漏洞进行钓鱼等攻击。 当用户点">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StrandHogg漏洞分析笔记-copy">
+<meta property="og:url" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/index.html">
+<meta property="og:site_name" content="clicker&#39;s blogs">
+<meta property="og:description" content="*郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。  又是一个神不知鬼不觉盗取用户隐私信息的漏洞，用户实惨。。。 StrangHogg漏洞是一个存在于Android多任务系统中的应用漏洞。攻击者通过设置AndroidManifest.xml文件中组件的android:taskAffinity属性即可利用此漏洞进行钓鱼等攻击。 当用户点">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/t01fc7d99b17a8596c0.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/2019121212104067758.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/2019121212105243270.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/test1.gif">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/Screenshot_20191219-173012.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/D83B603F-FCBB-4ede-856E-977D02779A84.png">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/1867749D-BDED-49d0-AA15-58BAFA26E4AF.png">
+<meta property="article:published_time" content="2020-03-26T09:21:53.000Z">
+<meta property="article:modified_time" content="2020-03-26T09:32:56.415Z">
+<meta property="article:author" content="clicker">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="漏洞">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/t01fc7d99b17a8596c0.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/26/StrandHogg漏洞分析笔记-copy/"/>
+
+
+
+
+
+  <title>StrandHogg漏洞分析笔记-copy | clicker's blogs</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">clicker's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="clicker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="clicker's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">StrandHogg漏洞分析笔记-copy</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-26T17:21:53+08:00">
+                2020-03-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" itemprop="url" rel="index">
+                    <span itemprop="name">漏洞分析</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>*郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。</strong></p>
+<p><img src="t01fc7d99b17a8596c0.png" alt=""></p>
+<p>又是一个神不知鬼不觉盗取用户隐私信息的漏洞，用户实惨。。。</p>
+<p>StrangHogg漏洞是一个存在于Android多任务系统中的应用漏洞。攻击者通过设置AndroidManifest.xml文件中组件的android:taskAffinity属性即可利用此漏洞进行钓鱼等攻击。 当用户点击受害应用时，可直接弹出恶意应用界面， 伪装成另一个应用欺骗用户的重要账号密码，申请读取短信、联系人等权限，从而获取隐私信息。并且，此漏洞更加隐蔽的地方在于，即使用户查看后台应用也不会发现此时有两个看起来一样的应用在运行，危害极大！</p>
+<p><img src="2019121212104067758.jpg" alt=""></p>
+<p><img src="2019121212105243270.jpg" alt=""></p>
+<p>了解StrandHogg漏洞的原理，关键在 android:taskAffinity属性 。那么，首先就需要了解下Activity栈（Task，也可以叫做任务）。</p>
+<p>Activity栈是一种管理Activity界面的结构，遵循“后进先出”规则。位于栈顶的Activity获取屏幕的焦点，当按下“back”按钮时，栈顶Activity弹出，前一个Activity重新获取焦点。</p>
+<p>一般情况下，同一个应用程序中启动的Activity位于一个栈中，多个应用程序同时运行时，查看后台应用，可以看到多个任务栈。官方提供了 <code>android:taskAffinity</code> 这一属性，使得不同应用的Activity也可以进入同一个栈（Task）中。官方翻译为“ 从概念上讲，具有同一相似性的 Activity 归属同一Task（从用户的角度来看，则是归属同一“应用”） ”。每个Activity都有taskAffinity属性，指明它启动时进入的Task。若没有显式指定，就遵循其所在的Application标签中的该属性。若Application标签中也没指定，taskAffinity属性值就是包名。</p>
+<p>如果想要单独给某个Activity设定一个任务栈，就需要设置<code>TaskAffinity</code>属性。除此之外，还需将Activity的启动模式即<code>android:lunchMode</code>属性设置为<code>singleTop</code>,或是启动Activity时设置<code>FLAG_ACTIVITY_NEW_TASK</code>。</p>
+<p>StrandHogg漏洞涉及到的另一个属性是android:allowTaskReparenting。官方解释为： 当下一次将启动 Activity 的任务转至前台时，Activity 是否能从该任务转移至与其有相似性的任务 —“<code>true</code>”表示可以转移，“<code>false</code>”表示仍须留在启动它的任务处。 读起来相当拗口。在这里，当恶意应用设置了android:taskAffinity属性值为受害应用的taskAffinity值（大多为包名），然后将 android:allowTaskReparenting属性设置为true，那么，先点击恶意应用，再启动受害应用时，跳出来的就是恶意应用的界面。事实上，受害应用的Activity也启动了，只不过恶意应用瞬间就重新寄宿到受害应用的Task中，导致受害应用的界面被覆盖掉。</p>
+<p><strong>案例：</strong>下面视频以某宝为例演示钓鱼实验过程</p>
+<p><img src="test1.gif" alt=""></p>
+<p>步骤为：点击恶意应用（某宝1）-&gt; 点击返回键 -&gt; 点击受害应用（某宝）。可以看到登录页面被无缝覆盖。仔细观察也能发现钓鱼页面与原页面不同，不过要是一门心思使坏，也能做到页面、图标与受害应用一模一样。</p>
+<p>查看后台应用，也只有一个应用：</p>
+<p><img src="Screenshot_20191219-173012.png" alt=""></p>
+<p>打开山寨应用，查看当前Activity栈信息，发现其TaskRecorder是“com.eg.android.AlipayGphone”，即受害应用包名。</p>
+<p><img src="D83B603F-FCBB-4ede-856E-977D02779A84.png" alt=""></p>
+<p>攻击成功时，Activity栈信息，如下图：</p>
+<p><img src="1867749D-BDED-49d0-AA15-58BAFA26E4AF.png" alt=""></p>
+<p>实际场景中，攻击成功是需要条件的。android:allowTaskReparenting属性和 android:taskAffinity属性是将恶意应用的某Activity与受害应用的Activity关联，使其启动时进入同一个Task。因此，攻击并不是每次都能成功，必须是恶意应用先启动，然后再启动受害应用。<br>另一个需要克服的问题是，必须保证恶意应用进程一直在后台运行，而不被杀死。</p>
+<p>对我来说，实验中耗费时间最长的就是制作钓鱼页面了。。。页面布局是个大坑啊。不过若只是想假冒应用获取敏感权限，就不需要会费心思制作输入框了，截个图就行了。（当然只是实验环境，胆小如我并没有找别人测试。）</p>
+<p>这个功能是系统提供的，即使被用作钓鱼，也不会被手机自带的杀毒软件识别出来。再加上某些非手机自带“安全”APP的特点，对于没有安全基础的广大Android用户来说，可能唯一的方法就是不安装来源不明的软件了。</p>
+<p>今天看到工信部公布了第一批侵害用户权益的APP名单，希望我们广大Android用户的使用体验能越来越好吧~</p>
+<p>参考文献：<br>（1） <a href="https://developer.android.com/guide/topics/manifest/activity-element" target="_blank" rel="noopener">https://developer.android.com/guide/topics/manifest/activity-element</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/%E6%BC%8F%E6%B4%9E/" rel="tag"># 漏洞</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/26/%E6%B0%B8%E6%81%92%E4%B9%8B%E8%93%9D%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0-copy/" rel="next" title="永恒之蓝实验笔记-copy">
+                <i class="fa fa-chevron-left"></i> 永恒之蓝实验笔记-copy
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">clicker</p>
+              <p class="site-description motion-element" itemprop="description">灾难总是接踵而至，这正是世间的常理。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">clicker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
