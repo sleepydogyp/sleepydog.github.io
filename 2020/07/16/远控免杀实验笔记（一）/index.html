@@ -83,32 +83,21 @@
 
 
 
-<meta name="description" content="com.metasploit.stage分析郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 先分析客户端（移动设备上apk），再分析msf端的原理，透彻理解服务端控制客户端的原理。 1.反编译首先，反编译生成的apk文件。将apk文件拖入jeb工具中，可以看到此apk的主要类结构。从Manifest文件可以看出，应用入口为MainA">
+<meta name="description" content="远控免杀实验笔记（一）郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 msf远控程序直接安装在手机上，会被安全卫士识别为病毒。移动端安全卫士识别病毒有两种方式，一种是依靠特征码扫描，即应用包名和签名；一种是主动防御，监控高危的API调用。因此，考虑给应用加个壳，也就是将原本的dex文件加密，在应用运行时再动态解密加载。 Androi">
 <meta property="og:type" content="article">
-<meta property="og:title" content="com.metasploit.stage分析">
-<meta property="og:url" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/index.html">
+<meta property="og:title" content="远控免杀实验笔记（一）">
+<meta property="og:url" content="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
 <meta property="og:site_name" content="clicker&#39;s blogs">
-<meta property="og:description" content="com.metasploit.stage分析郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 先分析客户端（移动设备上apk），再分析msf端的原理，透彻理解服务端控制客户端的原理。 1.反编译首先，反编译生成的apk文件。将apk文件拖入jeb工具中，可以看到此apk的主要类结构。从Manifest文件可以看出，应用入口为MainA">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630154246007.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630161204397.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630161730343.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630162622935.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630163037019.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630174353882.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630172642154.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630172930068.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630173204517.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630173801701.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630175301744.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200701140248112.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200701142807469.png">
-<meta property="og:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200701150116368.png">
-<meta property="article:published_time" content="2020-07-01T09:23:10.000Z">
-<meta property="article:modified_time" content="2020-07-16T05:49:44.770Z">
+<meta property="og:description" content="远控免杀实验笔记（一）郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 msf远控程序直接安装在手机上，会被安全卫士识别为病毒。移动端安全卫士识别病毒有两种方式，一种是依靠特征码扫描，即应用包名和签名；一种是主动防御，监控高危的API调用。因此，考虑给应用加个壳，也就是将原本的dex文件加密，在应用运行时再动态解密加载。 Androi">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/image-20200716152115679.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/image-20200716152328477.png">
+<meta property="og:image" content="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/image-20200716154729049.png">
+<meta property="article:published_time" content="2020-07-16T05:44:48.000Z">
+<meta property="article:modified_time" content="2020-07-16T08:19:12.145Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/image-20200630154246007.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/image-20200716152115679.png">
 
 
 
@@ -138,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/07/01/com-metasploit-stage分析/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/07/16/远控免杀实验笔记（一）/"/>
 
 
 
 
 
-  <title>com.metasploit.stage分析 | clicker's blogs</title>
+  <title>远控免杀实验笔记（一） | clicker's blogs</title>
   
 
 
@@ -271,7 +260,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="clicker">
@@ -288,7 +277,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">com.metasploit.stage分析</h1>
+          <h1 class="post-title" itemprop="name headline">远控免杀实验笔记（一）</h1>
         
 
         <div class="post-meta">
@@ -300,8 +289,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-01T17:23:10+08:00">
-                2020-07-01
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-07-16T13:44:48+08:00">
+                2020-07-16
               </time>
             
 
@@ -360,43 +349,47 @@
       
 
       
-        <h1 id="com-metasploit-stage分析"><a href="#com-metasploit-stage分析" class="headerlink" title="com.metasploit.stage分析"></a>com.metasploit.stage分析</h1><p><strong><em>郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。</em></strong></p>
-<p>先分析客户端（移动设备上apk），再分析msf端的原理，透彻理解服务端控制客户端的原理。</p>
-<h2 id="1-反编译"><a href="#1-反编译" class="headerlink" title="1.反编译"></a>1.反编译</h2><p>首先，反编译生成的apk文件。将apk文件拖入jeb工具中，可以看到此apk的主要类结构。从Manifest文件可以看出，应用入口为MainActivity，设置了<code>android:theme</code>为<code>“@android:style/Theme.NoDisplay”</code>，即不显示。定义了一个MainBroadcastReceiver，接收设备已启动广播。在Mainservice中执行主要操作。</p>
-<p><img src="image-20200630154246007.png" alt=""></p>
-<h2 id="2-调用入口"><a href="#2-调用入口" class="headerlink" title="2.调用入口"></a>2.调用入口</h2><p>在MainActivity和MainBroadcastReceiver中的onCreate和onReceive方法中均调用了<code>MainService.startService</code>。看一下MainService的代码：</p>
-<p><img src="image-20200630161204397.png" alt=""></p>
-<p>在startService()方法中，启动了MainService服务，会调用onStartCommand方法，传入Context参数。onStartCommand方法中，调用了关键类<code>Payload</code>的start方法。看一下代码：</p>
-<p><img src="image-20200630161730343.png" alt=""></p>
-<p>注意，方法中调用了<code>startInPath</code>方法，并传入了Context.getFilesDir().toString。getFilesDir()方法用于获取/data/data/<application package>/files目录，即应用的私有目录。Payload.a是一个byte[]静态常量，和应用私有目录一起初始化了Payload.h。</p>
-<p>然后，进入类e。该类代码如下:</p>
-<p><img src="image-20200630162622935.png" alt=""></p>
-<p>可以看到只是新起了一个线程来执行Payload.main()方法。</p>
-<h2 id="3-Payload类"><a href="#3-Payload类" class="headerlink" title="3.Payload类"></a>3.Payload类</h2><h3 id="3-1-main"><a href="#3-1-main" class="headerlink" title="3.1 main()"></a>3.1 main()</h3><p>回到Payload类，main方法：</p>
-<p><img src="image-20200630163037019.png" alt=""></p>
-<p>传进来的参数的null,执行<code>a v6 = b.a(Payload.a);</code>，即对byte[]常量Payload.a进行一系列位运算（怀疑是某种加密算法），返回类a的实例。</p>
-<h3 id="3-2-关键代码"><a href="#3-2-关键代码" class="headerlink" title="3.2 关键代码"></a>3.2 关键代码</h3><p>关键代码如下，即对Payload.a解析出的数据进行一系列操作：</p>
-<p><img src="image-20200630174353882.png" alt=""></p>
-<p>在while循环中，对String类型的变量v7进行判断。v7来自g对象的String变量a，而g对象来自Payload.a解析后生成的a类型的对象中的LinkedList类型变量d的第0个元素。</p>
-<p>v7判断处有两个分支：以“tcp”开头和以“https”开头。</p>
-<p>若以“tcp”开头，则对v7进行格式化，根据格式化的代码：</p>
-<p><img src="image-20200630172642154.png" alt=""></p>
-<p>可以看出，v7的格式为：<code>tcp://ip:port</code>. v3_1即为ip, v2_1即为端口号。然后，建立Socket连接，如下图：</p>
-<p><img src="image-20200630172930068.png" alt=""></p>
-<p>若以“https”开头，则调用类a的a()方法解析请求，代码如下：</p>
-<p><img src="image-20200630173204517.png" alt=""></p>
-<p>然后，调用类f的a()方法,初始化SSLSocket连接:</p>
-<p><img src="image-20200630173801701.png" alt=""></p>
-<h3 id="3-3-Paload-a"><a href="#3-3-Paload-a" class="headerlink" title="3.3 Paload.a()"></a>3.3 Paload.a()</h3><p> 建立Socket或SSLSocket连接后，调用了Payload.a()方法传输文件：</p>
-<p><img src="image-20200630175301744.png" alt=""></p>
-<p>首先，从远程下载jar文件到本地，然后，加载该文件，再通过反射调用start()方法。</p>
-<h3 id="3-4-分析远程下载的文件"><a href="#3-4-分析远程下载的文件" class="headerlink" title="3.4 分析远程下载的文件"></a>3.4 分析远程下载的文件</h3><p>从上图可以看到，调用DexClassLoader.loadClass()方法，执行动态加载，随即删除了从远程下载的文件。为了查看从远程下载的文件内容是什么，需要修改文件，重新打包此应用。找到Payload.smali文件中对应的delete语句，将其删除即可，如下图：</p>
-<p><img src="image-20200701140248112.png" alt=""></p>
-<p>重新打包签名（PS：签名一完成，windows自带的扫描工具就扫描出了病毒。。。。），安装，执行，在/data/data/com.metasploit.stage/files目录下，找到了下载的文件：</p>
-<p><img src="image-20200701142807469.png" alt=""></p>
-<p>反编译jar包，可以得到：</p>
-<p><img src="image-20200701150116368.png" alt=""></p>
-<p>可以看到，这里的方法就是Payload类中通过反射调用的start()方法。start()方法通过读取数据流，以及加载dex文件，就可以执行远程指令。</p>
+        <h1 id="远控免杀实验笔记（一）"><a href="#远控免杀实验笔记（一）" class="headerlink" title="远控免杀实验笔记（一）"></a>远控免杀实验笔记（一）</h1><p><strong><em>郑重声明：本文展示的过程是在模拟环境中进行的，只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。</em></strong></p>
+<p>msf远控程序直接安装在手机上，会被安全卫士识别为病毒。移动端安全卫士识别病毒有两种方式，一种是依靠特征码扫描，即应用包名和签名；一种是主动防御，监控高危的API调用。因此，考虑给应用加个壳，也就是将原本的dex文件加密，在应用运行时再动态解密加载。</p>
+<p>Android应用加固目前已经发展的比较成熟了，为了不重复造轮子，同时我们加壳的目的并不是防止反编译，只是为了隐藏代码，直接找一个开源的加壳工具就可以了。</p>
+<p>加壳原理参考博客：<a href="https://blog.csdn.net/LVXIANGAN/article/details/84956476" target="_blank" rel="noopener">https://blog.csdn.net/LVXIANGAN/article/details/84956476</a></p>
+<p>工具下载地址：<a href="https://github.com/lvxiangan/Android-Shell2" target="_blank" rel="noopener">https://github.com/lvxiangan/Android-Shell2</a></p>
+<p><strong>加壳步骤：</strong></p>
+<ol>
+<li>反编译原远控apk, 增加Application类，并相应的修改AndroidManifest.xml.</li>
+</ol>
+<p><img src="image-20200716152115679.png" alt=""></p>
+<p><img src="image-20200716152328477.png" alt=""></p>
+<ol start="2">
+<li><p>回编译后重新打包，签名。经过测试，可以连通~</p>
+</li>
+<li><p>修改解壳程序的Manifest文件，将远控apk的Manifest文件中的权限，和Application标签中的内容拷贝过来，注意Application标签和Activity等四大组件的android:name属性，要补全包名。</p>
+<p><img src="image-20200716154729049.png" alt=""></p>
+<p>然后，Build工程，生成解壳apk。</p>
+</li>
+<li><p>将解壳apk中的classes.dex文件拷贝出来，改为shell.dex，与远控apk文件一起放在加密工程的force目录下。运行加密程序即可将远控apk加密，并与shell.dex合并，生成新的classes.dex文件。</p>
+</li>
+<li><p>将生成的classes.dex文件拷贝到解壳apk中，替换原有的clasess.dex。</p>
+</li>
+<li><p>将解壳apk中原有的签名文件删除，即<code>META-INF</code>目录，重新签名。</p>
+</li>
+<li><p>安装测试，可以连通~</p>
+</li>
+</ol>
+<p>安装了主流的三款手机安全卫士都没有检测出来，这一阶段的目标达成~</p>
+<p>但是，存在一个问题：直接adb install 安装应用时，报了<code>adb: failed to install payload-release.apk: Failure [INSTALL_FAILED_TEST_ONLY: installPackageLI]</code>错误。</p>
+<p>可能原因是：</p>
+<ol>
+<li><p>Manifest中设置了<code>android:testOnly=&quot;true&quot;</code>，需要将此属性的值设置为false。然而工程中并没有设置此属性啊，，，</p>
+</li>
+<li><p>gradle文件配置时使用了测试版本,如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    classpath &#39;com.android.tools.build:gradle:4.0.0-alpha&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>需要将<code>-alpha</code>删掉。然而工程中也并未使用测试版本，，，</p>
+</li>
+</ol>
+<p>暂时的解决方法是，安装时使用<code>adb install -t apk</code>，加一个参数<code>-t</code>，就可以正常安装了。</p>
+<p>当前远控应用不能常驻后台，因此下一个需要解决的问题是连接的稳定性。</p>
 
       
     </div>
@@ -427,8 +420,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/03/26/StrandHogg%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0-copy/" rel="next" title="StrandHogg漏洞分析笔记-copy">
-                <i class="fa fa-chevron-left"></i> StrandHogg漏洞分析笔记-copy
+              <a href="/2020/07/01/com-metasploit-stage%E5%88%86%E6%9E%90/" rel="next" title="com.metasploit.stage分析">
+                <i class="fa fa-chevron-left"></i> com.metasploit.stage分析
               </a>
             
           </div>
@@ -436,10 +429,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/07/16/%E8%BF%9C%E6%8E%A7%E5%85%8D%E6%9D%80%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/" rel="prev" title="远控免杀实验笔记（一）">
-                远控免杀实验笔记（一） <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -578,7 +567,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#com-metasploit-stage分析"><span class="nav-number">1.</span> <span class="nav-text">com.metasploit.stage分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-反编译"><span class="nav-number">1.1.</span> <span class="nav-text">1.反编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-调用入口"><span class="nav-number">1.2.</span> <span class="nav-text">2.调用入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Payload类"><span class="nav-number">1.3.</span> <span class="nav-text">3.Payload类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-main"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 main()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-关键代码"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 关键代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Paload-a"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 Paload.a()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-分析远程下载的文件"><span class="nav-number">1.3.4.</span> <span class="nav-text">3.4 分析远程下载的文件</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#远控免杀实验笔记（一）"><span class="nav-number">1.</span> <span class="nav-text">远控免杀实验笔记（一）</span></a></li></ol></div>
             
 
           </div>
