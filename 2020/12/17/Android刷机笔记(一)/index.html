@@ -86,24 +86,24 @@
 <meta name="description" content="*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 我们的最终目标是获取设备root权限，之后就可以实现我们想要但手机厂商没有提供的功能了。 Android设备root有两个思路。一是将su程序放在&#x2F;system分区，系统启动时就可以获得相应权限。但是，&#x2F;system分区只能读不能写，就需要找到系统漏洞，将su程序写入。因此，以前检测设备是否root的方法是检查">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android刷机笔记（一）">
-<meta property="og:url" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/index.html">
+<meta property="og:url" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/index.html">
 <meta property="og:site_name" content="clicker&#39;s blogs">
 <meta property="og:description" content="*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 我们的最终目标是获取设备root权限，之后就可以实现我们想要但手机厂商没有提供的功能了。 Android设备root有两个思路。一是将su程序放在&#x2F;system分区，系统启动时就可以获得相应权限。但是，&#x2F;system分区只能读不能写，就需要找到系统漏洞，将su程序写入。因此，以前检测设备是否root的方法是检查">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp1.png">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp2.png">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_091435__01.jpg">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_094051__01.jpg">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/1A71B00C-1D76-420a-A5DE-D5C958940F59.png">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_110651__01.jpg">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_103148__01.jpg">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/Screenshot_2020-12-17-10-39-47-291_com.topjohnwu.magisk.jpg">
-<meta property="og:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/Screenshot_2020-12-17-11-16-00-773_com.topjohnwu.magisk.jpg">
-<meta property="article:published_time" content="2020-12-15T05:52:20.000Z">
-<meta property="article:modified_time" content="2020-12-17T03:56:07.985Z">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp1.png">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp2.png">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_091435__01.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_094051__01.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/1A71B00C-1D76-420a-A5DE-D5C958940F59.png">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_110651__01.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/IMG_20201217_103148__01.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/Screenshot_2020-12-17-10-39-47-291_com.topjohnwu.magisk.jpg">
+<meta property="og:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/Screenshot_2020-12-17-11-16-00-773_com.topjohnwu.magisk.jpg">
+<meta property="article:published_time" content="2020-12-17T05:52:20.000Z">
+<meta property="article:modified_time" content="2020-12-17T07:16:28.875Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp1.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/twrp1.png">
 
 
 
@@ -133,7 +133,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/12/15/Android刷机笔记(一)/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/12/17/Android刷机笔记(一)/"/>
 
 
 
@@ -266,7 +266,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/15/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/17/Android%E5%88%B7%E6%9C%BA%E7%AC%94%E8%AE%B0(%E4%B8%80)/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="clicker">
@@ -295,8 +295,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-15T13:52:20+08:00">
-                2020-12-15
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-17T13:52:20+08:00">
+                2020-12-17
               </time>
             
 
