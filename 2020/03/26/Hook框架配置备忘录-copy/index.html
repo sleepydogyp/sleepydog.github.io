@@ -113,7 +113,7 @@
 <meta property="og:image" content="https://uploader.shimo.im/f/Dx3ZeJIsULINnQ3C.png!thumbnail">
 <meta property="og:image" content="https://uploader.shimo.im/f/pFo4F8Y1T3UrwEhN.png!thumbnail">
 <meta property="article:published_time" content="2020-03-26T08:35:46.000Z">
-<meta property="article:modified_time" content="2020-03-26T09:10:58.318Z">
+<meta property="article:modified_time" content="2020-10-16T09:18:03.870Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="hook">
@@ -381,7 +381,7 @@
 <p>由于dalvik环境下xposed对multidex的支持没有很好的通用解决方案，寻找目标函数会发生ClassNotFoundError，所以处理multidex需要一些技巧（Tips）: 此问题因为classloader出错引起的，所以要寻找attachBaseContext 的classloader，而非lpparam.classLoader（此思路来自非虫前辈）。</p>
 <h2 id="Frida配置"><a href="#Frida配置" class="headerlink" title="Frida配置"></a>Frida配置</h2><p>这里介绍Android中Frida的环境配置。分为服务端和客户端两个部分。</p>
 <h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><h4 id="1-1-客户端配置"><a href="#1-1-客户端配置" class="headerlink" title="1.1 客户端配置"></a>1.1 客户端配置</h4><p>客户端的配置是在PC端，需要首先安装Python环境，配置pip模块。然后，执行命令：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install fridapip install frida-tools</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install frida </span><br><span class="line">pip install frida-tools</span><br></pre></td></tr></table></figure>
 
 <p>然后执行<code>pip list</code>查看是否安装成功。</p>
 <p><img src="frida1.PNG" alt=""></p>
@@ -392,12 +392,14 @@
 <p>结果显示：</p>
 <p><img src="arm64.PNG" alt=""></p>
 <p>即为ARM64.</p>
-<p>然后，在<a href="https://github.com/frida/frida/releases下载与客户端frida**对应版本**、与测试机**架构相同**的frida-server压缩包。注意：服务端frida-server版本与客户端frida版本必须相同才能正常运行。" target="_blank" rel="noopener">https://github.com/frida/frida/releases下载与客户端frida**对应版本**、与测试机**架构相同**的frida-server压缩包。注意：服务端frida-server版本与客户端frida版本必须相同才能正常运行。</a></p>
+<p>然后，下载与客户端frida<strong>对应版本</strong>、与测试机<strong>架构相同</strong>的frida-server压缩包。</p>
+<p>地址： <a href="https://github.com/frida/frida/releases" target="_blank" rel="noopener">https://github.com/frida/frida/releases</a></p>
+<p>注意：服务端frida-server版本与客户端frida版本必须相同才能正常运行。</p>
 <p>下载之后，解压，并将解压得到的文件传入测试机/data/local/tmp目录下。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb push frida-server &#x2F;data&#x2F;local&#x2F;tmp *# adb push 参数1 参数2*</span><br><span class="line">adb shell cd data&#x2F;local&#x2F;tmp </span><br><span class="line">chmod 777 frida-server</span><br></pre></td></tr></table></figure>
 
 <p><strong>注意：</strong>最好使用真机，模拟器会因为架构兼容模式从而使得程序报错。</p>
-<p>执行frida-servcer: <code>**./freda-server**</code></p>
+<p>执行frida-servcer: <code>./freda-server</code></p>
 <p>另起一个终端，配置端口转发： <code>adb forward tcp:27043 tcp:27043</code></p>
 <p>执行<strong>frida-ps -U</strong>测试是否启动成功，如图：</p>
 <p><img src="frida2.PNG" alt=""></p>
@@ -658,7 +660,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
