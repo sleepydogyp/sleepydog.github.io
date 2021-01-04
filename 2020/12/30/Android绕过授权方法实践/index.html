@@ -89,14 +89,14 @@
 <meta property="og:url" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/index.html">
 <meta property="og:site_name" content="clicker&#39;s blogs">
 <meta property="og:description" content="*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 设备：root过的Android7.1 在上篇文章中我们跟着沿着源码追溯了Android系统授权的过程，这篇文章记录下怎么绕过系统的校验。 可以看到检查权限时的一个分支为： 1234&#x2F;&#x2F; Root, system server get to do everything.        if (uid &#x3D;&#x3D; 0">
-<meta property="og:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/10C8C19E-B352-4eb6-9CA1-F7FCFD6A734F.png">
-<meta property="og:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/E21AE1A6-64E0-40d1-A43A-12E6A6EC9543.png">
+<meta property="og:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/packages_list_before.png">
+<meta property="og:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/packages_list_after.png">
 <meta property="article:published_time" content="2020-12-30T02:04:55.000Z">
-<meta property="article:modified_time" content="2020-12-31T09:48:56.497Z">
+<meta property="article:modified_time" content="2021-01-04T02:04:30.590Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/10C8C19E-B352-4eb6-9CA1-F7FCFD6A734F.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/12/30/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5/packages_list_before.png">
 
 
 
@@ -368,8 +368,8 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">        Process process = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            process = Runtime.getRuntime().exec(<span class="string">"su"</span>);</span><br><span class="line">            DataOutputStream dataOutputStream = <span class="keyword">new</span> DataOutputStream(process.getOutputStream());</span><br><span class="line">            dataOutputStream.writeBytes(<span class="string">"chmod 777 /data/system/packages.list \n"</span>);</span><br><span class="line">            dataOutputStream.writeBytes(<span class="string">"sed -i '/package.name/d' /data/system/packages.list \n"</span>);</span><br><span class="line">            dataOutputStream.writeBytes(<span class="string">"sed -i '$a package.name 0 1 /data/user/0/com.android.sparrow default 3003'  /data/system/packages.list"</span>);</span><br><span class="line"><span class="comment">//            dataOutputStream.writeBytes("reboot \n");</span></span><br><span class="line"></span><br><span class="line">            dataOutputStream.flush();</span><br><span class="line">            dataOutputStream.close();</span><br><span class="line">            process.waitFor();</span><br><span class="line">            process.destroy();</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
 
 <p>执行成功！</p>
-<p><img src="10C8C19E-B352-4eb6-9CA1-F7FCFD6A734F.png" alt=""></p>
-<p><img src="E21AE1A6-64E0-40d1-A43A-12E6A6EC9543.png" alt=""></p>
+<p><img src="packages_list_before.png" alt=""></p>
+<p><img src="packages_list_after.png" alt=""></p>
 <p>但是app读取的uid依然没变，说明判断权限时的UID不是从这个文件读取的。</p>
 <p><code>ActivityCompat.checkSelfPermission()</code>中的调用语句：<code>context.checkPermission(permission, android.os.Process.myPid(), Process.myUid())</code></p>
 <p>可以看出uid是由<code>Process.myUid()</code>返回的：</p>
