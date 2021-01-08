@@ -90,7 +90,7 @@
 <meta property="og:site_name" content="clicker&#39;s blogs">
 <meta property="og:description" content="*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。 上回说到我们考虑两种方法： （1）通过反射，调用PackageManagerService中的设置权限的方法，直接传入权限和应用信息，对应用授权； （2）直接修改uid:修改 &#x2F;data&#x2F;system&#x2F;packages.list, &#x2F;data&#x2F;system&#x2F;packages.xml等存储应用运行信息的文件 反射">
 <meta property="article:published_time" content="2021-01-07T05:36:27.000Z">
-<meta property="article:modified_time" content="2021-01-08T08:21:59.679Z">
+<meta property="article:modified_time" content="2021-01-08T09:09:05.439Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary">
@@ -395,32 +395,17 @@
 <p>（2）修改存放应用权限的文件信息</p>
 <p> /data/system目录中的packages.list和packages.xml两个文件分别存放了应用的uid、安装路径信息和授予的权限信息。</p>
 <p>找到<code>package</code>标签中<code>name=包名</code>的项，在<code>&lt;perm&gt;</code>字段增加权限：</p>
-<blockquote>
-<p>​    <item name="android.permission.WRITE_EXTERNAL_STORAGE" granted="true" flags="0" /></p>
-<item name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />
-</blockquote>
+<p> <code>&lt;item name=&quot;android.permission.WRITE_EXTERNAL_STORAGE&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;</code> </p>
+<p><code>&lt;item name=&quot;android.permission.READ_EXTERNAL_STORAGE&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;</code></p>
 <p>保存文件。</p>
 <p>点击运行应用，发现并未生效。重启设备，发现新增的字段没有了。手动在设备的”设置“中修改权限，发现此文件并未改变，还是只有系统默认授予的权限。</p>
 <p>另外还有一个文件<code>/data/system/users/0/runtime-permissions.xml</code>，保存了实时的权限信息，在“设置”中，修改授权情况会直接将权限信息写入此文件。</p>
-<blockquote>
-  <pkg name="com.xxx">
-    <item name="android.permission.READ_SMS" granted="true" flags="0" />
-    <item name="android.permission.READ_CALENDAR" granted="true" flags="0" />
-    <item name="android.permission.READ_CALL_LOG" granted="true" flags="0" />
-    <item name="android.permission.ACCESS_FINE_LOCATION" granted="true" flags="0" />
-    <item name="android.permission.RECEIVE_SMS" granted="true" flags="0" />
-    <item name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="0" />
-    <item name="android.permission.READ_PHONE_STATE" granted="true" flags="0" />
-    <item name="android.permission.SEND_SMS" granted="true" flags="0" />
-    <item name="android.permission.CALL_PHONE" granted="true" flags="0" />
-    <item name="android.permission.WRITE_CONTACTS" granted="true" flags="0" />
-    <item name="android.permission.CAMERA" granted="true" flags="0" />
-    <item name="android.permission.WRITE_CALENDAR" granted="true" flags="0" />
-    <item name="android.permission.WRITE_EXTERNAL_STORAGE" granted="true" flags="0" />
-    <item name="android.permission.RECORD_AUDIO" granted="true" flags="0" />
-    <item name="android.permission.READ_CONTACTS" granted="true" flags="0" />
-  </pkg>
-</blockquote>
+<p><code>&lt;pkg name=&quot;com.xxx&quot;&gt;
+ &lt;item name=&quot;android.permission.READ_SMS&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;
+ &lt;item name=&quot;android.permission.READ_CALENDAR&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;
+ &lt;item name=&quot;android.permission.READ_CALL_LOG&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;
+ &lt;item name=&quot;android.permission.ACCESS_FINE_LOCATION&quot; granted=&quot;true&quot; flags=&quot;0&quot; /&gt;
+&lt;/pkg&gt;</code></p>
 <p>尝试手动在文件中添加以上内容，重启设备后又恢复之前的状态了，也没有生效。</p>
 <h3 id="读写runtime-permissions-xml源码分析"><a href="#读写runtime-permissions-xml源码分析" class="headerlink" title="读写runtime-permissions.xml源码分析"></a>读写runtime-permissions.xml源码分析</h3><p>分析一下在哪里读了这个文件。</p>
 <p>在Settings类中，可以看到</p>
