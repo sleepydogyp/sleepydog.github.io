@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-01-08T08:51:45.173Z</updated>
+  <updated>2021-01-28T09:15:55.205Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Android绕过授权方法实践(三)</title>
+    <link href="http://yoursite.com/2021/01/14/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5-%E4%B8%89/"/>
+    <id>http://yoursite.com/2021/01/14/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5-%E4%B8%89/</id>
+    <published>2021-01-14T02:31:42.000Z</published>
+    <updated>2021-01-28T09:15:55.205Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。</strong></p><p>找到一个方法，在PC端adb shell中执行<code>pm grant com.android.xxx android.permission.READ_CONTACTS</code>就可以授权成功，无需root。</p><p>实验结果如下表所示：</p><table><thead><tr><th align="center">设备</th><th align="center">系统版本</th><th align="center">结果</th></tr></thead><tbody><tr><td align="center">Pixel/Pixel 2</td><td align="center">Android 10</td><td align="center">成功</td></tr><tr><td align="center">一加6</td><td align="center">Android 10</td><td align="center">成功</td></tr><tr><td align="center">小米max 2</td><td align="center">Android 7.1</td><td align="center">失败</td></tr></tbody></table><p>小米手机由于厂商自定义了一系列安全措施，比原生系统更严格一些。</p><p>以Pixel为例，介绍获取权限的过程：</p><p>将设备的开发者选项打开，进入USB调试状态，连接至PC端。</p><p>然后，执行命令：</p><p><code>adb push getPermission.sh /storage/emulated/0/Download</code>,</p><p>将shell脚本<code>getPermission.sh</code>拷贝至手机Download目录下。</p><p>脚本内容如下：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"> #!&#x2F;bin&#x2F;bash</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_SMS</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_CALENDAR</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_CALL_LOG</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.ACCESS_FINE_LOCATION</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.RECEIVE_SMS</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_EXTERNAL_STORAGE</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_PHONE_STATE</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.SEND_SMS</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.CALL_PHONE</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.WRITE_CONTACTS</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.CAMERA</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.WRITE_CALENDAR</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.WRITE_EXTERNAL_STORAGE</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.RECORD_AUDIO</span><br><span class="line"></span><br><span class="line">pm grant com.android.xxx android.permission.READ_CONTACTS</span><br></pre></td></tr></table></figure><p>在cmd中执行命令：</p><blockquote><p>adb shell</p><p>cd /storage/emulated/0/Download</p><p>sh getPermission.sh</p></blockquote><p>到设置中查看，应用已被授予权限。</p><hr><p>另外还尝试了在手机中安装终端Termux，在终端中执行pm命令，但是出现报错：</p><blockquote><p>cmd: Failure calling service package: Failed transaction(2147483646)</p></blockquote><p>参考<a href="https://forum.xda-developers.com/t/terminal-failure-calling-service-activity-android-8-0-issue.3709350/" target="_blank" rel="noopener">这里</a>的解释，需要开放selinux许可。</p><p>操作方法参考<a href="https://androidmore.com/set-selinux-permissive-android/#:~:text=Set%20SELinux%20Permissive%20Using%20the%20App%201%20Open,screen.%204%20On%20the%20homescreen%2C%20simply%20tap%20" target="_blank" rel="noopener">这里</a>，需要刷入第三方Recovery，比较麻烦了。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;strong&gt;*郑重声明：本文内容只为学习研究之用，如有人用于非法用途，产生的后果笔者不负任何责任。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;找到一个方法，在PC端adb shell中执行&lt;code&gt;pm grant com.android.xxx android.permiss
+      
+    
+    </summary>
+    
+    
+      <category term="Android实验笔记" scheme="http://yoursite.com/categories/Android%E5%AE%9E%E9%AA%8C%E7%AC%94%E8%AE%B0/"/>
+    
+    
+      <category term="Android" scheme="http://yoursite.com/tags/Android/"/>
+    
+  </entry>
   
   <entry>
     <title>远控免杀实验笔记（二）</title>
