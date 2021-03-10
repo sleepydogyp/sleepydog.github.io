@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="clicker's blogs" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="这是一篇学习笔记。 目标：借助或参考已有的分析框架，实现一个自动化检测数据泄露，或跟踪数据流向的工具。 思路：先学习一下静态污点分析的技术原理，再找一些目前已有的分析框架，看是否能为我所用，在此基础上二次开发。 1. 了解污点分析首先，了解几个概念： 数据流分析：获取数据如何沿着程序执行路径流动的分析过程； 控制流分析：可以理解为程序流程图的变形，隐去了处理逻辑，着重强调控制程序跳转的节点； 方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="污点分析之apk(一)">
+<meta property="og:url" content="http://yoursite.com/2021/03/09/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%B8%80/index.html">
+<meta property="og:site_name" content="clicker&#39;s blogs">
+<meta property="og:description" content="这是一篇学习笔记。 目标：借助或参考已有的分析框架，实现一个自动化检测数据泄露，或跟踪数据流向的工具。 思路：先学习一下静态污点分析的技术原理，再找一些目前已有的分析框架，看是否能为我所用，在此基础上二次开发。 1. 了解污点分析首先，了解几个概念： 数据流分析：获取数据如何沿着程序执行路径流动的分析过程； 控制流分析：可以理解为程序流程图的变形，隐去了处理逻辑，着重强调控制程序跳转的节点； 方法">
+<meta property="article:published_time" content="2021-03-09T05:52:57.000Z">
+<meta property="article:modified_time" content="2021-03-10T07:15:43.652Z">
+<meta property="article:author" content="clicker">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/03/09/污点分析之apk-一/"/>
+
+
+
+
+
+  <title>污点分析之apk(一) | clicker's blogs</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">clicker's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/09/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%B8%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="clicker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="clicker's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">污点分析之apk(一)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-03-09T13:52:57+08:00">
+                2021-03-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">Android逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这是一篇学习笔记。</p>
+<p><strong>目标</strong>：借助或参考已有的分析框架，实现一个自动化检测数据泄露，或跟踪数据流向的工具。</p>
+<p><strong>思路：</strong>先学习一下静态污点分析的技术原理，再找一些目前已有的分析框架，看是否能为我所用，在此基础上二次开发。</p>
+<h3 id="1-了解污点分析"><a href="#1-了解污点分析" class="headerlink" title="1. 了解污点分析"></a>1. 了解污点分析</h3><p>首先，了解几个概念：</p>
+<p>数据流分析：获取数据如何沿着程序执行路径流动的分析过程；</p>
+<p>控制流分析：可以理解为程序流程图的变形，隐去了处理逻辑，着重强调控制程序跳转的节点；</p>
+<p>方法调用图（call graph，即CG）：方法调用图则着重强调程序流程中方法间的调用逻辑。</p>
+<p>污点分析：是一项跟踪并分析污点信息在程序中流动的技术。可以抽象为一个三元组&lt;source, sink, sanitizers&gt;形式，source即为污染源，代表程序的敏感数据或引入的不受信任的数据；sink为污点汇聚点，代表直接产生安全敏感操作，或向外发送隐私数据；sanitizer即无害化处理，表示污染源数据通过一些操作解除了其危害性，如对发送出去的数据做了加密处理或对引入的数据做了安全校验。</p>
+<p>污点分析的过程就是先确定程序中的source点，分析程序中由source点标记的数据的传播过程，判断其是否经过无害化处理，最后，在sink点检测关键操作是否受到source点的影响。</p>
+<p>如：</p>
+<blockquote>
+<p>……</p>
+<p>scanf(“”%d, &amp;x);    // source，外部输入的变量x标记为污染源</p>
+<p>……</p>
+<p>y  =  x  +  1;      // y被污染，加入source</p>
+<p>x = 0;                // x被重新赋值，视为未污染的，将x移出source</p>
+<p>while(i &gt; y){      // sink，需要在此检查循环是否受y的影响</p>
+<p>……</p>
+<p>}</p>
+</blockquote>
+<p>上述示例为source点通过数据依赖关系传播，为显式信息流分析。还有一种通过控制依赖关系传播的方式，称为隐式信息流分析，如：</p>
+<blockquote>
+<p>scanf(“”%d, &amp;x);    // source</p>
+<p>if(x &gt; 0)</p>
+<p>​    y = 1;              </p>
+<p>else</p>
+<p>​    y = 0;</p>
+<p>sink(y);             //sink</p>
+</blockquote>
+<p><strong>确定污染源和汇聚点的方法：</strong></p>
+<p>（1）使用保守策略，认为所有外部输入的数据均有可能包含恶意数据，如把来自程序外部输入的数据统称为“污点数据”；</p>
+<p>（2）根据实际需要，将特定API或重要数据标记为污染源和汇聚点；</p>
+<p>（3）使用机器学习技术自动识别和标记污染源和汇聚点。</p>
+<p><strong>无害化处理：</strong></p>
+<p>无害化处理模块是指污点数据经过该模块的处理后，数据本身不再携带敏感信息或针对该数据的操作不会对系统产生危害，也就是说，带污点标记的数据在经过无害化处理后，污点标记可以被移除。</p>
+<p><strong>污点分析原理：</strong></p>
+<p>污点分析可以分为静态分析和动态分析，静态分析不需要运行程序，动态分析则是通过在程序运行中监控程序的污点数据的传播来检测数据能否从污染源传播到汇聚点。我们着重了解静态污点分析。</p>
+<p>静态污点分析的分析对象是程序源码或中间表示（如smali,soot的Jimple）。</p>
+<p>首先，解析程序，构建程序调用图、控制流图等辅助分析；</p>
+<p>然后，根据过程内和过程间的不同特征进行具体的数据传播分析，显示分析的传播方式包括<strong>直接赋值，函数调用，通过引用或指针传播</strong>，标记Source和Sink，最后再根据业务需求制定规则，分析得出最终结果。</p>
+<h3 id="2-污点分析实现原理"><a href="#2-污点分析实现原理" class="headerlink" title="2. 污点分析实现原理"></a>2. 污点分析实现原理</h3><h4 id="2-1-显式分析"><a href="#2-1-显式分析" class="headerlink" title="2.1 显式分析"></a>2.1 显式分析</h4><p>显式分析通常是沿着程序运行的路径方向分析污点的流向，分为过程内和过程间两个阶段。</p>
+<p>首先是过程内分析，可以理解为在一个方法内，按照一定顺序分析每一条语句和指令，从而得到污点信息的流向。</p>
+<p><strong>分析过程：</strong></p>
+<p>（1）<em>确定如何标记source点</em>。标记Source点，通常是为变量加一个boolean类型的标签，标记变量是否被污染。复杂一点的化，还可以标记变量的污染信息来自哪个source。若不使用标签，可以使用栈或队列来记录被污染的变量，从来跟踪污染信息的流向。</p>
+<p>（2）<em>分析语句</em>。主要关注赋值、控制语句以及方法调用语句（有时表述为过程调用）三种语句。</p>
+<ul>
+<li>赋值语句：<ul>
+<li><code>a = b</code>这样的简单赋值语句，左端变量与右端变量污染状态相同；</li>
+<li><code>a = b + c</code>这样的二元操作赋值语句，通常认为右端的操作数只要有一个是被污染的，则左端变量是被污染的；</li>
+<li>对于数组相关的赋值，如果可以确定数组下标的取值或范围，则可以精确判断数组中哪些元素被污染，否则认为整个数组被污染。</li>
+<li>对于包含字段或者包含指针操作的赋值语句，常常需要用到指向分析的分析结果。</li>
+</ul>
+</li>
+<li>控制语句：<ul>
+<li>对于条件控制转移语句，首先判断路径条件可能是包含对污点数据的限制，分析时需要识别这些条件，以判断这些条件是否足够保证程序不会收到攻击，如果可以，则将相应的变量标记为未污染。</li>
+<li>对于循环语句，通常规定循环遍历取值的界限不会收到污染数据的影响，如<code>for(i = 1; i &lt; k; i++){}</code>中，k应是未污染的。</li>
+</ul>
+</li>
+<li>方法调用语句：这里与过程间分析配合，使用了构建过程摘要的方法，描述怎样改变与该过程相关的变量的污染状态，以及对哪些变量的污染状态进行检测。这些变量可以是过程使用的参数、参数的字段或者过程的返回值等。例如在语句 <code>flag = obj.method(str);</code> 中，str 是污染的，那么通过过程间的分析，将变量 obj 的字段 str 标记为污染的，而记录方法的返回值的变量 flag 标记为未污染的。实际分析时，可以对已经分析过的方法构建摘要。例如前面的语句，其摘要描述为：方法 method 的参数污染状态决定其接收对象的实例域 str 的污染状态，并且它的返回值是未受污染的。那么下一次分析时，就可以直接通过摘要进行分析。</li>
+</ul>
+<p>（3）<em>遍历语句</em>。一般情况下，常常使用流敏感的方式或者路径敏感的方式进行遍历，并分析过程中的代码。如果使用流敏感的方式，可以通过对不同路径上的分析结果进行汇集，以发现程序中的数据净化规则。如果使用路径敏感的分析方式，则需要关注路径条件，如果路径条件中涉及对污染变量取值的限制，可认为路径条件对污染数据进行了净化，还可以将分析路径条件对污染数据的限制进行记录，如果在一条程序路径上，这些限制足够保证数据不会被攻击者利用，就可以将相应的变量标记为未污染的。</p>
+<p>其次是过程间分析，是在过程内分析的基础上，根据调用图中描述的调用关系，自底向上进行整体分析。</p>
+<h4 id="2-2-隐式分析"><a href="#2-2-隐式分析" class="headerlink" title="2.2 隐式分析"></a>2.2 隐式分析</h4><p>隐式分析，即基于控制依赖关系进行分析。首先，根据程序控制流图和方法调用图，根据需要优先考虑与Wource和Sink相关的程序语句构造程序依赖图（可以看作程序流程图的变形，着重强调条件判断和分支语句），根据污点分析规则，检测sink点处的敏感操作是否依赖于Source点。</p>
+<h3 id="3-污点分析框架"><a href="#3-污点分析框架" class="headerlink" title="3. 污点分析框架"></a>3. 污点分析框架</h3><h4 id="3-1-FlowDroid-框架"><a href="#3-1-FlowDroid-框架" class="headerlink" title="3.1 FlowDroid 框架"></a>3.1 FlowDroid 框架</h4><p>FlowDroid是一款基于Soot开发的对Android应用进行污点分析的框架。Soot是一款强大的Java代码优化分析框架，通过将Java字节码转换为其独有的中间表示，进行控制流分析、调用图分析等。FlowDroid也一直在维护，Github地址为：<a href="https://github.com/secure-software-engineering/FlowDroid" target="_blank" rel="noopener">https://github.com/secure-software-engineering/FlowDroid</a> 。</p>
+<p>如果不需要修改源码，直接使用的话，可以<a href="https://github.com/secure-software-engineering/FlowDroid/releases" target="_blank" rel="noopener">在这里</a>下载soot-infoflow-android-classes.jar和soot-infoflow-classes.jar两个文件，<a href="https://soot-build.cs.uni-paderborn.de/public/origin/master/soot/soot-master/" target="_blank" rel="noopener">在这里</a>下载最新版的sootclasses-trunk-jar-with-dependencies.jar，将jar包导入工程就可以使用FlowDroid进行调用图、数据流分析了。具体接口这里暂不赘述。</p>
+<p>PS：如果build失败的话，可能是缺少依赖的包了，下载trove4j.jar导入工程即可。</p>
+<h4 id="3-2-PATDroid"><a href="#3-2-PATDroid" class="headerlink" title="3.2 PATDroid"></a>3.2 PATDroid</h4><p>Github地址：<a href="https://github.com/mingyuan-xia/PATDroid" target="_blank" rel="noopener">https://github.com/mingyuan-xia/PATDroid</a></p>
+<p>PATDroid框架能够分析Android应用程序和系统本身。通过解析smali语句，分析程序控制流等，也具备污点分析能力。</p>
+<p>与FlowDroid相比，代码量较少易于阅读，方便二次开发。另外，PATDroid直接使用dexlib2工具提取dex中的类、方法、变量等信息，而FlowDroid则需要将dex字节码转换为中间语言，在进行分析，开销较大。</p>
+<p>下一章研究下PATDroid框架的具体实现。</p>
+<hr>
+<p><strong>参考文献：</strong></p>
+<p>[1] <a href="https://www.jianshu.com/p/dc30dc61acd6" target="_blank" rel="noopener">https://www.jianshu.com/p/dc30dc61acd6</a></p>
+<p>[2] <a href="https://firmianay.gitbooks.io/ctf-all-in-one/content/doc/5.5_taint_analysis.html" target="_blank" rel="noopener">https://firmianay.gitbooks.io/ctf-all-in-one/content/doc/5.5_taint_analysis.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/14/Android%E7%BB%95%E8%BF%87%E6%8E%88%E6%9D%83%E6%96%B9%E6%B3%95%E5%AE%9E%E8%B7%B5-%E4%B8%89/" rel="next" title="Android绕过授权方法实践(三)">
+                <i class="fa fa-chevron-left"></i> Android绕过授权方法实践(三)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">clicker</p>
+              <p class="site-description motion-element" itemprop="description">灾难总是接踵而至，这正是世间的常理。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-了解污点分析"><span class="nav-number">1.</span> <span class="nav-text">1. 了解污点分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-污点分析实现原理"><span class="nav-number">2.</span> <span class="nav-text">2. 污点分析实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-显式分析"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 显式分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-隐式分析"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 隐式分析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-污点分析框架"><span class="nav-number">3.</span> <span class="nav-text">3. 污点分析框架</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-FlowDroid-框架"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 FlowDroid 框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-PATDroid"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 PATDroid</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">clicker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

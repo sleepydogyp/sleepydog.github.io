@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2021-01-28T09:15:55.205Z</updated>
+  <updated>2021-03-10T07:15:43.652Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,34 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>污点分析之apk(一)</title>
+    <link href="http://yoursite.com/2021/03/09/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%B8%80/"/>
+    <id>http://yoursite.com/2021/03/09/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%B8%80/</id>
+    <published>2021-03-09T05:52:57.000Z</published>
+    <updated>2021-03-10T07:15:43.652Z</updated>
+    
+    <content type="html"><![CDATA[<p>这是一篇学习笔记。</p><p><strong>目标</strong>：借助或参考已有的分析框架，实现一个自动化检测数据泄露，或跟踪数据流向的工具。</p><p><strong>思路：</strong>先学习一下静态污点分析的技术原理，再找一些目前已有的分析框架，看是否能为我所用，在此基础上二次开发。</p><h3 id="1-了解污点分析"><a href="#1-了解污点分析" class="headerlink" title="1. 了解污点分析"></a>1. 了解污点分析</h3><p>首先，了解几个概念：</p><p>数据流分析：获取数据如何沿着程序执行路径流动的分析过程；</p><p>控制流分析：可以理解为程序流程图的变形，隐去了处理逻辑，着重强调控制程序跳转的节点；</p><p>方法调用图（call graph，即CG）：方法调用图则着重强调程序流程中方法间的调用逻辑。</p><p>污点分析：是一项跟踪并分析污点信息在程序中流动的技术。可以抽象为一个三元组&lt;source, sink, sanitizers&gt;形式，source即为污染源，代表程序的敏感数据或引入的不受信任的数据；sink为污点汇聚点，代表直接产生安全敏感操作，或向外发送隐私数据；sanitizer即无害化处理，表示污染源数据通过一些操作解除了其危害性，如对发送出去的数据做了加密处理或对引入的数据做了安全校验。</p><p>污点分析的过程就是先确定程序中的source点，分析程序中由source点标记的数据的传播过程，判断其是否经过无害化处理，最后，在sink点检测关键操作是否受到source点的影响。</p><p>如：</p><blockquote><p>……</p><p>scanf(“”%d, &amp;x);    // source，外部输入的变量x标记为污染源</p><p>……</p><p>y  =  x  +  1;      // y被污染，加入source</p><p>x = 0;                // x被重新赋值，视为未污染的，将x移出source</p><p>while(i &gt; y){      // sink，需要在此检查循环是否受y的影响</p><p>……</p><p>}</p></blockquote><p>上述示例为source点通过数据依赖关系传播，为显式信息流分析。还有一种通过控制依赖关系传播的方式，称为隐式信息流分析，如：</p><blockquote><p>scanf(“”%d, &amp;x);    // source</p><p>if(x &gt; 0)</p><p>​    y = 1;              </p><p>else</p><p>​    y = 0;</p><p>sink(y);             //sink</p></blockquote><p><strong>确定污染源和汇聚点的方法：</strong></p><p>（1）使用保守策略，认为所有外部输入的数据均有可能包含恶意数据，如把来自程序外部输入的数据统称为“污点数据”；</p><p>（2）根据实际需要，将特定API或重要数据标记为污染源和汇聚点；</p><p>（3）使用机器学习技术自动识别和标记污染源和汇聚点。</p><p><strong>无害化处理：</strong></p><p>无害化处理模块是指污点数据经过该模块的处理后，数据本身不再携带敏感信息或针对该数据的操作不会对系统产生危害，也就是说，带污点标记的数据在经过无害化处理后，污点标记可以被移除。</p><p><strong>污点分析原理：</strong></p><p>污点分析可以分为静态分析和动态分析，静态分析不需要运行程序，动态分析则是通过在程序运行中监控程序的污点数据的传播来检测数据能否从污染源传播到汇聚点。我们着重了解静态污点分析。</p><p>静态污点分析的分析对象是程序源码或中间表示（如smali,soot的Jimple）。</p><p>首先，解析程序，构建程序调用图、控制流图等辅助分析；</p><p>然后，根据过程内和过程间的不同特征进行具体的数据传播分析，显示分析的传播方式包括<strong>直接赋值，函数调用，通过引用或指针传播</strong>，标记Source和Sink，最后再根据业务需求制定规则，分析得出最终结果。</p><h3 id="2-污点分析实现原理"><a href="#2-污点分析实现原理" class="headerlink" title="2. 污点分析实现原理"></a>2. 污点分析实现原理</h3><h4 id="2-1-显式分析"><a href="#2-1-显式分析" class="headerlink" title="2.1 显式分析"></a>2.1 显式分析</h4><p>显式分析通常是沿着程序运行的路径方向分析污点的流向，分为过程内和过程间两个阶段。</p><p>首先是过程内分析，可以理解为在一个方法内，按照一定顺序分析每一条语句和指令，从而得到污点信息的流向。</p><p><strong>分析过程：</strong></p><p>（1）<em>确定如何标记source点</em>。标记Source点，通常是为变量加一个boolean类型的标签，标记变量是否被污染。复杂一点的化，还可以标记变量的污染信息来自哪个source。若不使用标签，可以使用栈或队列来记录被污染的变量，从来跟踪污染信息的流向。</p><p>（2）<em>分析语句</em>。主要关注赋值、控制语句以及方法调用语句（有时表述为过程调用）三种语句。</p><ul><li>赋值语句：<ul><li><code>a = b</code>这样的简单赋值语句，左端变量与右端变量污染状态相同；</li><li><code>a = b + c</code>这样的二元操作赋值语句，通常认为右端的操作数只要有一个是被污染的，则左端变量是被污染的；</li><li>对于数组相关的赋值，如果可以确定数组下标的取值或范围，则可以精确判断数组中哪些元素被污染，否则认为整个数组被污染。</li><li>对于包含字段或者包含指针操作的赋值语句，常常需要用到指向分析的分析结果。</li></ul></li><li>控制语句：<ul><li>对于条件控制转移语句，首先判断路径条件可能是包含对污点数据的限制，分析时需要识别这些条件，以判断这些条件是否足够保证程序不会收到攻击，如果可以，则将相应的变量标记为未污染。</li><li>对于循环语句，通常规定循环遍历取值的界限不会收到污染数据的影响，如<code>for(i = 1; i &lt; k; i++){}</code>中，k应是未污染的。</li></ul></li><li>方法调用语句：这里与过程间分析配合，使用了构建过程摘要的方法，描述怎样改变与该过程相关的变量的污染状态，以及对哪些变量的污染状态进行检测。这些变量可以是过程使用的参数、参数的字段或者过程的返回值等。例如在语句 <code>flag = obj.method(str);</code> 中，str 是污染的，那么通过过程间的分析，将变量 obj 的字段 str 标记为污染的，而记录方法的返回值的变量 flag 标记为未污染的。实际分析时，可以对已经分析过的方法构建摘要。例如前面的语句，其摘要描述为：方法 method 的参数污染状态决定其接收对象的实例域 str 的污染状态，并且它的返回值是未受污染的。那么下一次分析时，就可以直接通过摘要进行分析。</li></ul><p>（3）<em>遍历语句</em>。一般情况下，常常使用流敏感的方式或者路径敏感的方式进行遍历，并分析过程中的代码。如果使用流敏感的方式，可以通过对不同路径上的分析结果进行汇集，以发现程序中的数据净化规则。如果使用路径敏感的分析方式，则需要关注路径条件，如果路径条件中涉及对污染变量取值的限制，可认为路径条件对污染数据进行了净化，还可以将分析路径条件对污染数据的限制进行记录，如果在一条程序路径上，这些限制足够保证数据不会被攻击者利用，就可以将相应的变量标记为未污染的。</p><p>其次是过程间分析，是在过程内分析的基础上，根据调用图中描述的调用关系，自底向上进行整体分析。</p><h4 id="2-2-隐式分析"><a href="#2-2-隐式分析" class="headerlink" title="2.2 隐式分析"></a>2.2 隐式分析</h4><p>隐式分析，即基于控制依赖关系进行分析。首先，根据程序控制流图和方法调用图，根据需要优先考虑与Wource和Sink相关的程序语句构造程序依赖图（可以看作程序流程图的变形，着重强调条件判断和分支语句），根据污点分析规则，检测sink点处的敏感操作是否依赖于Source点。</p><h3 id="3-污点分析框架"><a href="#3-污点分析框架" class="headerlink" title="3. 污点分析框架"></a>3. 污点分析框架</h3><h4 id="3-1-FlowDroid-框架"><a href="#3-1-FlowDroid-框架" class="headerlink" title="3.1 FlowDroid 框架"></a>3.1 FlowDroid 框架</h4><p>FlowDroid是一款基于Soot开发的对Android应用进行污点分析的框架。Soot是一款强大的Java代码优化分析框架，通过将Java字节码转换为其独有的中间表示，进行控制流分析、调用图分析等。FlowDroid也一直在维护，Github地址为：<a href="https://github.com/secure-software-engineering/FlowDroid" target="_blank" rel="noopener">https://github.com/secure-software-engineering/FlowDroid</a> 。</p><p>如果不需要修改源码，直接使用的话，可以<a href="https://github.com/secure-software-engineering/FlowDroid/releases" target="_blank" rel="noopener">在这里</a>下载soot-infoflow-android-classes.jar和soot-infoflow-classes.jar两个文件，<a href="https://soot-build.cs.uni-paderborn.de/public/origin/master/soot/soot-master/" target="_blank" rel="noopener">在这里</a>下载最新版的sootclasses-trunk-jar-with-dependencies.jar，将jar包导入工程就可以使用FlowDroid进行调用图、数据流分析了。具体接口这里暂不赘述。</p><p>PS：如果build失败的话，可能是缺少依赖的包了，下载trove4j.jar导入工程即可。</p><h4 id="3-2-PATDroid"><a href="#3-2-PATDroid" class="headerlink" title="3.2 PATDroid"></a>3.2 PATDroid</h4><p>Github地址：<a href="https://github.com/mingyuan-xia/PATDroid" target="_blank" rel="noopener">https://github.com/mingyuan-xia/PATDroid</a></p><p>PATDroid框架能够分析Android应用程序和系统本身。通过解析smali语句，分析程序控制流等，也具备污点分析能力。</p><p>与FlowDroid相比，代码量较少易于阅读，方便二次开发。另外，PATDroid直接使用dexlib2工具提取dex中的类、方法、变量等信息，而FlowDroid则需要将dex字节码转换为中间语言，在进行分析，开销较大。</p><p>下一章研究下PATDroid框架的具体实现。</p><hr><p><strong>参考文献：</strong></p><p>[1] <a href="https://www.jianshu.com/p/dc30dc61acd6" target="_blank" rel="noopener">https://www.jianshu.com/p/dc30dc61acd6</a></p><p>[2] <a href="https://firmianay.gitbooks.io/ctf-all-in-one/content/doc/5.5_taint_analysis.html" target="_blank" rel="noopener">https://firmianay.gitbooks.io/ctf-all-in-one/content/doc/5.5_taint_analysis.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;这是一篇学习笔记。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;目标&lt;/strong&gt;：借助或参考已有的分析框架，实现一个自动化检测数据泄露，或跟踪数据流向的工具。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;思路：&lt;/strong&gt;先学习一下静态污点分析的技术原理，再找一些目前已有的分析框架，看是否
+      
+    
+    </summary>
+    
+    
+      <category term="Android逆向" scheme="http://yoursite.com/categories/Android%E9%80%86%E5%90%91/"/>
+    
+    
+      <category term="Android" scheme="http://yoursite.com/tags/Android/"/>
+    
+  </entry>
   
   <entry>
     <title>Android绕过授权方法实践(三)</title>
