@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android,PATDroid," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="clicker's blogs" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="PATDroid框架源码分析PATDroid是一个apk分析框架，能够提取并解析dex中的classes、methods、fields和指令，作者在此基础上实现了AppAudit系统，能够实现污点分析、fuzzing等功能，但是并未开源。不过我们可以在PATDroid的基础上，根据需要自己实现污点分析过程。 PATDroid论文地址：https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;pdf&#x2F;10.11">
+<meta property="og:type" content="article">
+<meta property="og:title" content="污点分析之apk(二)">
+<meta property="og:url" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/index.html">
+<meta property="og:site_name" content="clicker&#39;s blogs">
+<meta property="og:description" content="PATDroid框架源码分析PATDroid是一个apk分析框架，能够提取并解析dex中的classes、methods、fields和指令，作者在此基础上实现了AppAudit系统，能够实现污点分析、fuzzing等功能，但是并未开源。不过我们可以在PATDroid的基础上，根据需要自己实现污点分析过程。 PATDroid论文地址：https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;pdf&#x2F;10.11">
+<meta property="og:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/PATDroid_program.png">
+<meta property="og:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/dexlib2.png">
+<meta property="og:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/scope.png">
+<meta property="og:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/collector.png">
+<meta property="og:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/insns.png">
+<meta property="article:published_time" content="2021-03-10T07:29:30.000Z">
+<meta property="article:modified_time" content="2021-03-11T09:57:10.680Z">
+<meta property="article:author" content="clicker">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="PATDroid">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/PATDroid_program.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/03/10/污点分析之apk-二/"/>
+
+
+
+
+
+  <title>污点分析之apk(二) | clicker's blogs</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">clicker's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="clicker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="clicker's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">污点分析之apk(二)</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-03-10T15:29:30+08:00">
+                2021-03-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">Android逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="PATDroid框架源码分析"><a href="#PATDroid框架源码分析" class="headerlink" title="PATDroid框架源码分析"></a>PATDroid框架源码分析</h2><p>PATDroid是一个apk分析框架，能够提取并解析dex中的classes、methods、fields和指令，作者在此基础上实现了AppAudit系统，能够实现污点分析、fuzzing等功能，但是并未开源。不过我们可以在PATDroid的基础上，根据需要自己实现污点分析过程。</p>
+<p>PATDroid论文地址：<a href="https://dl.acm.org/doi/pdf/10.1145/3106237.3106250" target="_blank" rel="noopener">https://dl.acm.org/doi/pdf/10.1145/3106237.3106250</a></p>
+<p>PATDroid源码地址：<a href="https://github.com/mingyuan-xia/PATDroid" target="_blank" rel="noopener">https://github.com/mingyuan-xia/PATDroid</a></p>
+<p>论文纯英文的，有13页，程序分析部分可阅读第六节，文章主题是测试动态授予权限对应用行为的影响，读起来实在头大，我们直接分析源码。</p>
+<p>从Github下载zip源码包，解压缩之后直接导入Android Studio或IDEA，等待gradle下载依赖包即可。</p>
+<p>PATDroid结构如图所示：</p>
+<p><img src="PATDroid_program.png" alt=""></p>
+<ul>
+<li>core：提供class、method、field、java基础类型的representation；</li>
+<li>dalvik：Dalvik指令解析；</li>
+<li>fs：模拟一个简易的Android文件系统</li>
+<li>permission：获取指定Android API版本的权限，及其对应的接口；</li>
+<li>smali：使用dexlib2，从dex中提取并转译classes、methods、fields和指令;</li>
+<li>util：日志等工具类。</li>
+</ul>
+<p>PATDroid框架中解析dex，以及后文提取classes、methods、fields和指令的过程都使用了dexlib2包中的方法。</p>
+<p>源码地址： <a href="https://github.com/JesusFreke/smali/tree/master/dexlib2/src/main/java/org/jf/dexlib2" target="_blank" rel="noopener">https://github.com/JesusFreke/smali/tree/master/dexlib2/src/main/java/org/jf/dexlib2</a></p>
+<p>关于dexlib2的资料很少，只能通过源码了解一下它的功能和实现原理了。</p>
+<p>dexlib2的目录如下图：</p>
+<p><img src="dexlib2.png" alt=""></p>
+<ul>
+<li><p>iface：其中的所有类均为接口，主要作用为优化代码结构；</p>
+</li>
+<li><p>base：其中均为实现了iface中refrence和value接口的抽象类，具体实现了<code>hashCode</code>,<code>equals</code>和<code>compareTo</code>方法，用来表示dex文件中的一些基础数据结构；</p>
+</li>
+<li><p>builder：是支撑将smali文件写回dex文件的类库；</p>
+</li>
+<li><p>dexbacked：解析输入的dex文件，dex文件中的所有类、方法和指令都能够在这个文件夹下找到相应的类来表示；</p>
+</li>
+<li><p>immutable，rewtiter和writer：都是需要修改dex文件时用的，配合build使用；</p>
+</li>
+<li><p>util：工具类。</p>
+</li>
+</ul>
+<hr>
+<p>PATDroid程序入口在Main中，关键语句为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Scope scope = <span class="keyword">new</span> Scope();</span><br><span class="line">SmaliClassDetailLoader.fromApkFile(apkFile, API_LEVEL, <span class="keyword">true</span>).loadAll(scope);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="1-初始化SmaliClassDetailLoader对象"><a href="#1-初始化SmaliClassDetailLoader对象" class="headerlink" title="1. 初始化SmaliClassDetailLoader对象"></a>1. 初始化SmaliClassDetailLoader对象</h3><p><code>public static SmaliClassDetailLoader fromApkFile(ZipFile apkFile, int apiLevel, boolean translateInstructions)</code></p>
+<p>此方法首先提取apk中所有的dex文件，再调用dexlib2包的<code>DexBackedDexFile.fromInputStream()</code>方法进行解析，得到一个DexFile[]数组变量。</p>
+<p>PATDroid中解析dex文件的代码为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">DexFile[] dexFiles = <span class="keyword">new</span> DexFile[n];</span><br><span class="line"><span class="keyword">final</span> Opcodes opcodes = Opcodes.forApi(apiLevel);</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; ++i) &#123;</span><br><span class="line">        dexFiles[i] = DexBackedDexFile.fromInputStream(opcodes,</span><br><span class="line">                <span class="keyword">new</span> BufferedInputStream(apkFile.getInputStream(dexEntries.get(i))));</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">    Log.err(<span class="string">"failed to process the source apk file"</span>);</span><br><span class="line">    Log.err(e);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里涉及到dexlib2中<code>DexFile</code>,<code>Opcodes</code>,<code>DexBackedDexFile</code>几个类：</p>
+<ul>
+<li><p><code>Opcodes</code>: <code>Opcodes.forApi(apiLevel)</code>即根据输入的APILevel初始化smali操作指令（有的指令是Android后面版本新增的，因此需要根据APILevel判定）；</p>
+</li>
+<li><p><code>DexFile</code>: 有两个方法<code>getClasses()</code>和<code>getOpcodes()</code>，即获取dex中的所有类（<code>Set&lt;? extends ClassDef&gt;</code>），和与此dex相关的Opcodes;</p>
+</li>
+<li><p><code>DexBackedDexFile</code>: 继承了<code>BaseDexBuffer</code>,实现了DexFile。在构造函数中，根据DexHeader格式直接从Dex文件读取String、type、proto、field、method、class的count和offset，作为<code>DexBackedDexFile</code>对象的字段，方便后续解析。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">stringCount = readSmallUint(HeaderItem.STRING_COUNT_OFFSET);</span><br><span class="line">stringStartOffset = readSmallUint(HeaderItem.STRING_START_OFFSET);</span><br><span class="line">typeCount = readSmallUint(HeaderItem.TYPE_COUNT_OFFSET);</span><br><span class="line">typeStartOffset = readSmallUint(HeaderItem.TYPE_START_OFFSET);</span><br><span class="line">protoCount = readSmallUint(HeaderItem.PROTO_COUNT_OFFSET);</span><br><span class="line">protoStartOffset = readSmallUint(HeaderItem.PROTO_START_OFFSET);</span><br><span class="line">fieldCount = readSmallUint(HeaderItem.FIELD_COUNT_OFFSET);</span><br><span class="line">fieldStartOffset = readSmallUint(HeaderItem.FIELD_START_OFFSET);</span><br><span class="line">methodCount = readSmallUint(HeaderItem.METHOD_COUNT_OFFSET);</span><br><span class="line">methodStartOffset = readSmallUint(HeaderItem.METHOD_START_OFFSET);</span><br><span class="line">classCount = readSmallUint(HeaderItem.CLASS_COUNT_OFFSET);</span><br><span class="line">classStartOffset = readSmallUint(HeaderItem.CLASS_START_OFFSET);</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p><em>PS：Dex文件解析：<a href="https://www.cnblogs.com/aWxvdmVseXc0/p/11879093.html" target="_blank" rel="noopener">https://www.cnblogs.com/aWxvdmVseXc0/p/11879093.html</a></em></p>
+<p>然后，<code>dexFiles</code>传入<code>SmaliClassDetailLoader</code>构造方法，最终返回一个<code>SmaliClassDetailLoader</code>类的对象:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> SmaliClassDetailLoader(dexFiles, translateInstructions, <span class="keyword">false</span>);</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-loadAll-Scope-方法"><a href="#2-loadAll-Scope-方法" class="headerlink" title="2. loadAll(Scope)方法"></a>2. <code>loadAll(Scope)</code>方法</h3><p>上文<code>SmaliClassDetailLoader</code>对象初始化完成，调用<code>loadAll()</code>方法对dex进行解析，提取其中的classes、methods、fields和指令。</p>
+<p>参数Scope类是一个存放classes的容器。其重要字段classes，以Map格式存放了ClassInfo:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, ClassInfo&gt; classes = <span class="keyword">new</span> HashMap&lt;String, ClassInfo&gt;();</span><br></pre></td></tr></table></figure>
+
+<p><code>ClassInfo</code>对象能够唯一的表示一个类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Parse an apk file and extract all classes, methods, fields and optionally instructions</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">loadAll</span><span class="params">(Scope scope)</span> </span>&#123;</span><br><span class="line">    IdentityHashMap&lt;MethodInfo, MethodImplementation&gt; collector = <span class="keyword">new</span> IdentityHashMap&lt;MethodInfo, MethodImplementation&gt;();</span><br><span class="line">    <span class="keyword">for</span> (DexFile dexFile: dexFiles) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">final</span> ClassDef classDef : dexFile.getClasses()) &#123;</span><br><span class="line">            ClassInfo ci = Dalvik.findOrCreateClass(scope, classDef.getType());</span><br><span class="line">            ClassDetail detail = translateClassDef(ci, classDef, collector);</span><br><span class="line">            setDetail(ci, detail);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (translateInstructions) &#123;</span><br><span class="line">        <span class="keyword">for</span> (MethodInfo mi: collector.keySet()) &#123;</span><br><span class="line">            <span class="keyword">final</span> MethodImplementation impl = collector.get(mi);</span><br><span class="line">            <span class="comment">// Decode instructions</span></span><br><span class="line">            <span class="keyword">if</span> (impl != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">new</span> MethodImplementationTranslator(scope).translate(mi, impl);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>前半部分为逐个dex分析从<code>DexBackedDexFile</code>解析得到的dexFile，将classes信息放入scope对象中，并在解析过程中从dex读取method地址信息。</p>
+<p><img src="scope.png" alt=""></p>
+<p><img src="collector.png" alt=""></p>
+<p>后半部分，调用<code>MethodImplementationTranslator</code>的<code>translate()</code>方法，逐个method解析出每一行的内容。</p>
+<p><img src="insns.png" alt=""></p>
+<p>至此，dex解析最终完成，所有信息都存放在Scope对象中。</p>
+<p>下一步，就是构建方法调用图、控制流图、数据流图等。</p>
+<p><strong>参考文献：</strong></p>
+<p>【1】<a href="https://www.cnblogs.com/coffee520/p/11264449.html" target="_blank" rel="noopener">https://www.cnblogs.com/coffee520/p/11264449.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+            <a href="/tags/PATDroid/" rel="tag"># PATDroid</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/03/09/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%B8%80/" rel="next" title="污点分析之apk(一)">
+                <i class="fa fa-chevron-left"></i> 污点分析之apk(一)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">clicker</p>
+              <p class="site-description motion-element" itemprop="description">灾难总是接踵而至，这正是世间的常理。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#PATDroid框架源码分析"><span class="nav-number">1.</span> <span class="nav-text">PATDroid框架源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-初始化SmaliClassDetailLoader对象"><span class="nav-number">1.1.</span> <span class="nav-text">1. 初始化SmaliClassDetailLoader对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-loadAll-Scope-方法"><span class="nav-number">1.2.</span> <span class="nav-text">2. loadAll(Scope)方法</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">clicker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
