@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android," />
+
+
+
+
+  
+
+
+  <link rel="alternate" href="/atom.xml" title="clicker's blogs" type="application/atom+xml" />
+
+
+
+
+
+
+<meta name="description" content="为了理解与分析APP源码，需要知道APP是怎么开发出来的。了解当前主流的APP开发架构，便于在分析dex的时候就能够有的放矢，抓住重点。 一个APP的核心是数据，根据其数据处理的模式这里暂时总结出两类：  数据展示类：我们平时使用的绝大多数应用都可归为此类，如即时通讯类APP，频繁与服务端进行数据交互，并实时显示在页面中；社交、购物和资讯类APP，将服务端发来的数据列表显示在页面中，将用户在设备上">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android APP架构总结">
+<meta property="og:url" content="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="clicker&#39;s blogs">
+<meta property="og:description" content="为了理解与分析APP源码，需要知道APP是怎么开发出来的。了解当前主流的APP开发架构，便于在分析dex的时候就能够有的放矢，抓住重点。 一个APP的核心是数据，根据其数据处理的模式这里暂时总结出两类：  数据展示类：我们平时使用的绝大多数应用都可归为此类，如即时通讯类APP，频繁与服务端进行数据交互，并实时显示在页面中；社交、购物和资讯类APP，将服务端发来的数据列表显示在页面中，将用户在设备上">
+<meta property="og:image" content="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/%E5%88%9D%E5%A7%8B%E7%BB%93%E6%9E%84.png">
+<meta property="og:image" content="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/5c7ab2b4f9875c77.png">
+<meta property="og:image" content="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/cb17e2aedd347454.png">
+<meta property="article:published_time" content="2021-06-03T08:42:12.000Z">
+<meta property="article:modified_time" content="2021-06-03T08:42:46.371Z">
+<meta property="article:author" content="clicker">
+<meta property="article:tag" content="Android">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/%E5%88%9D%E5%A7%8B%E7%BB%93%E6%9E%84.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/06/03/Android-APP架构总结/"/>
+
+
+
+
+
+  <title>Android APP架构总结 | clicker's blogs</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">clicker's blogs</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/06/03/Android-APP%E6%9E%B6%E6%9E%84%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="clicker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="clicker's blogs">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android APP架构总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-06-03T16:42:12+08:00">
+                2021-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android%E9%80%86%E5%90%91/" itemprop="url" rel="index">
+                    <span itemprop="name">Android逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>为了理解与分析APP源码，需要知道APP是怎么开发出来的。了解当前主流的APP开发架构，便于在分析dex的时候就能够有的放矢，抓住重点。</p>
+<p>一个APP的核心是数据，根据其数据处理的模式这里暂时总结出两类：</p>
+<ul>
+<li>数据展示类：我们平时使用的绝大多数应用都可归为此类，如即时通讯类APP，频繁与服务端进行数据交互，并实时显示在页面中；社交、购物和资讯类APP，将服务端发来的数据列表显示在页面中，将用户在设备上的操作产生的数据回传给服务端。</li>
+<li>系统工具类：主要调用系统接口，将少量设备信息、APP状态信息等传回服务端。</li>
+</ul>
+<p>从用户的角度来看，应用启动的过程是：点击APP图标-&gt;设备显示APP页面数据和功能-&gt;用户与页面交互。APP开发时，承载这一过程的主要组件就是Activity。开发者通过View设计页面布局，Activity作为载体显示界面，并实现交互逻辑。比较基础的应用就会将数据管理、文件操作、网络数据传输等功能直接由Activity或Framework调用。</p>
+<p><img src="%E5%88%9D%E5%A7%8B%E7%BB%93%E6%9E%84.png" alt=""></p>
+<p>但是，当页面功能较为复杂时，就会维护困难。而Activity或Framework中复杂的数据运算或网络通信会导致用户交互时页面反应变慢，造成“卡顿”的既视感，因此，考虑将数据处理逻辑分离出去。</p>
+<hr>
+<p>根据程序设计的原则（面向对象原则、单一职责原则、开闭原则、里氏替换原则、依赖倒转原则、接口隔离原则），目前主流的架构方案有MVC、MVP、MVVM等。</p>
+<h4 id="1-MVC"><a href="#1-MVC" class="headerlink" title="1. MVC"></a>1. MVC</h4><p>MVC即model，view，controller。</p>
+<ul>
+<li>Model：负责处理数据的加载或存储</li>
+<li>View：负责数据展示，与用户进行交互</li>
+<li>Controller：负责处理业务逻辑</li>
+</ul>
+<p>其流程为：View接收用户输入，然后将请求传递给Controller，Controller再调用某个Model来处理用户的请求，再由Controller将处理后的结果交给某个View输出给用户。</p>
+<p>以简单的用户登录为例：</p>
+<p>项目目录：<img src="5c7ab2b4f9875c77.png" alt=""></p>
+<p>首先，定义一个Person的bean类：</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String password;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getUsername</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> username;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUsername</span><span class="params">(String username)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.username = username;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPassword</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> password;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPassword</span><span class="params">(String password)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.password = password;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>定义一个回调接口OnPersonListener:</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OnPersonListener</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onSuccess</span><span class="params">(Person person)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">onFailure</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>再定义一个接口PersonModel，并实现PersonModelImpl：</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PersonModelImpl</span> <span class="keyword">implements</span> <span class="title">PersonModel</span> </span>&#123;</span><br><span class="line">    <span class="comment">//在此处写相应逻辑</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">login</span><span class="params">(Person person, OnPersonListener onPersonListener)</span> </span>&#123;</span><br><span class="line">     															              <span class="keyword">if</span>(person.getUsername().equals(<span class="string">"123"</span>)&amp;&amp;person.getPassword().equals(<span class="string">"123"</span>))&#123;</span><br><span class="line">            onPersonListener.onSuccess(person);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            onPersonListener.onFailure();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>Activity中实现业务逻辑：</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> <span class="keyword">implements</span> <span class="title">OnPersonListener</span>,<span class="title">View</span>.<span class="title">OnClickListener</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> EditText et_username;</span><br><span class="line">    <span class="keyword">private</span> EditText et_password;</span><br><span class="line">    <span class="keyword">private</span> Button btn_login;</span><br><span class="line">    <span class="keyword">private</span> String username;</span><br><span class="line">    <span class="keyword">private</span> String password;</span><br><span class="line">    <span class="keyword">private</span> PersonModelImpl personModel;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        init();</span><br><span class="line">        personModel = <span class="keyword">new</span> PersonModelImpl();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//控件初始化</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        et_username = (EditText)findViewById(R.id.et_username);</span><br><span class="line">        et_password = (EditText)findViewById(R.id.et_password);</span><br><span class="line">        btn_login = (Button)findViewById(R.id.btn_login);</span><br><span class="line">        btn_login.setOnClickListener(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">        username = et_username.getText().toString();</span><br><span class="line">        password = et_password.getText().toString();</span><br><span class="line">        Person person = <span class="keyword">new</span> Person();</span><br><span class="line">        person.setUsername(username);</span><br><span class="line">        person.setPassword(password);</span><br><span class="line">        personModel.login(person,<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onSuccess</span><span class="params">(Person person)</span> </span>&#123;</span><br><span class="line">        Toast.makeText(<span class="keyword">this</span>, <span class="string">"登录成功"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Toast.makeText(<span class="keyword">this</span>, <span class="string">"登录失败"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>可以看到主要的业务逻辑是在Activity中实现的，把上述示例中Onclick()实现独立出去为一个新建的Controller类，就是一个更明显的典型MVC模式。</p>
+<p>其实，初学者就是以MVC的思路在开发，但是面对较为复杂的应用，Activity作为Controller的负担就会过重，APP功能扩展，程序复用上就会面临较多问题。</p>
+<h4 id="2-MVP"><a href="#2-MVP" class="headerlink" title="2. MVP"></a>2. MVP</h4><p>MVP:Model-View-Presenter,基本思想与MVC相通，即将数据显示、数据处理和业务逻辑分开。具体实现则不相同，这里Presenter相当于中间桥梁的作用，View显示数据直接访问Presenter，由Presenter请求Model。Model处理完数据后返回给Presenter, 再由Presenter交给View显示。整个过程中的交互都由Presenter进行，Presenter同时持有View和Model的对象的引用，才能在它们之间进行通信。</p>
+<p>Activity和Fragment在这个MVP模式中被抽象为View，所有的业务逻辑，与数据处理相关的部分都交给Presenter去与Model交互。</p>
+<p>MVC架构中的例子，用MVP架构表达如下：</p>
+<p>View接口：</p>
+<blockquote>
+<p>​    public interface IPersonView{</p>
+<p>​        void showPerson(String result);</p>
+<p>​    }</p>
+</blockquote>
+<p>Presenter层：</p>
+<blockquote>
+<p>public class PersonPresenter{</p>
+<p>​    private IPersonView personView;</p>
+<p>​    private IPersonModel personModel;</p>
+<p>​    public PersonPresenter(IPersonView personView){</p>
+<p>​        this.personView = personView;</p>
+<p>​        personModel = new PersonModel();</p>
+<p>​    }</p>
+<p>// 业务逻辑</p>
+<p>​    public void login(Person person){</p>
+<p>​        personModel.login(person, new onPersonListener(){</p>
+<p>​            @Override</p>
+<p>​            public void onSuccess(Person person) {</p>
+<p>​                    personView.showPerson(“登录成功”);</p>
+<p>​          }</p>
+<p>​            @Override<br>​            public void onFailure() {<br>​                    personView.showPerson(“登录失败”);<br>​            }</p>
+<p>​        });    </p>
+<p>​    }</p>
+<p>}</p>
+</blockquote>
+<p>Activity:</p>
+<blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> <span class="keyword">implements</span>  <span class="title">IPersonView</span>,<span class="title">View</span>.<span class="title">OnClickListener</span> </span>&#123;</span><br><span class="line"><span class="keyword">private</span> EditText et_username;</span><br><span class="line"><span class="keyword">private</span> EditText et_password;</span><br><span class="line"><span class="keyword">private</span> Button btn_login;</span><br><span class="line"><span class="keyword">private</span> String username;</span><br><span class="line"><span class="keyword">private</span> String password;</span><br><span class="line"><span class="keyword">private</span> PersonPresenter personPresenter;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">    setContentView(R.layout.activity_main);</span><br><span class="line">    init();</span><br><span class="line">    personPresenter = <span class="keyword">new</span> PersonPresenter(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//控件初始化</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    et_username = (EditText)findViewById(R.id.et_username);</span><br><span class="line">    et_password = (EditText)findViewById(R.id.et_password);</span><br><span class="line">    btn_login = (Button)findViewById(R.id.btn_login);</span><br><span class="line">    btn_login.setOnClickListener(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">    username = et_username.getText().toString();</span><br><span class="line">    password = et_password.getText().toString();</span><br><span class="line">    Person person = <span class="keyword">new</span> Person();</span><br><span class="line">    person.setUsername(username);</span><br><span class="line">    person.setPassword(password);</span><br><span class="line">    personPresenter.login(person);</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">showPerson</span><span class="params">(String result)</span></span>&#123;</span><br><span class="line">		Toast.makeText(<span class="keyword">this</span>,result, Toast.LENGTH_SHORT).show();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h4 id="3-MVVM"><a href="#3-MVVM" class="headerlink" title="3. MVVM"></a>3. MVVM</h4><p>MV-VM相比与MVP就是将Presenter层替换成ViewModel层。ViewModel层所需要做的就是跟逻辑相关的代码，完全不会涉及到UI。谷歌针对MVVM架构推出了一款方便实现的工具–DataBinding。</p>
+<p>在 DataBinding 库之前，我们经常会写一些重复性很高而且毫无营养的代码，比如：findViewById()、setText()、setOnClickListener() 等。直到2015谷歌 I/O大会推出了 DataBinding，一个实现视图和数据双向绑定的工具。使用 DataBinding 库以后，可以使用声明式布局文件来减少粘结业务逻辑和布局文件的代码，有利于开发者更方便地实现 MVVM 模式。</p>
+<p>具体实现和配置方法参考<a href="https://www.jianshu.com/p/153ba1adf4cc" target="_blank" rel="noopener">这篇博客</a>。</p>
+<p>工程目录示例：</p>
+<p><img src="cb17e2aedd347454.png" alt=""></p>
+<p>Activity中绑定View Model，并在new ViewModel对象时中传入当前Activity对象，执行一系列业务逻辑。</p>
+<hr>
+<p>总结：除了以上主流架构之外，还有一些分层架构等类型，都是开发者在实践过程中逐渐探索出的高效快速开发出APP的方法。熟悉APP架构能够帮助我们分析dex文件时大概把握开发者思路，从而提高分析效率。</p>
+<p><strong>参考文章：</strong></p>
+<p>【1】<a href="https://www.jianshu.com/p/01946d23d35b" target="_blank" rel="noopener">https://www.jianshu.com/p/01946d23d35b</a> </p>
+<p>【2】<a href="https://juejin.cn/post/6844903539341262855" target="_blank" rel="noopener">https://juejin.cn/post/6844903539341262855</a></p>
+<p>【3】<a href="https://www.jianshu.com/p/153ba1adf4cc" target="_blank" rel="noopener">https://www.jianshu.com/p/153ba1adf4cc</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag"># Android</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/03/10/%E6%B1%A1%E7%82%B9%E5%88%86%E6%9E%90%E4%B9%8Bapk-%E4%BA%8C/" rel="next" title="污点分析之apk(二)">
+                <i class="fa fa-chevron-left"></i> 污点分析之apk(二)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">clicker</p>
+              <p class="site-description motion-element" itemprop="description">灾难总是接踵而至，这正是世间的常理。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-MVC"><span class="nav-number">1.</span> <span class="nav-text">1. MVC</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-MVP"><span class="nav-number">2.</span> <span class="nav-text">2. MVP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-MVVM"><span class="nav-number">3.</span> <span class="nav-text">3. MVVM</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">clicker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
