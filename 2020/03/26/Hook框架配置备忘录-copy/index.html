@@ -113,7 +113,7 @@
 <meta property="og:image" content="https://uploader.shimo.im/f/Dx3ZeJIsULINnQ3C.png!thumbnail">
 <meta property="og:image" content="https://uploader.shimo.im/f/pFo4F8Y1T3UrwEhN.png!thumbnail">
 <meta property="article:published_time" content="2020-03-26T08:35:46.000Z">
-<meta property="article:modified_time" content="2020-10-16T09:18:03.870Z">
+<meta property="article:modified_time" content="2021-06-16T05:42:00.463Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="hook">
@@ -399,12 +399,12 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">adb push frida-server &#x2F;data&#x2F;local&#x2F;tmp *# adb push 参数1 参数2*</span><br><span class="line">adb shell cd data&#x2F;local&#x2F;tmp </span><br><span class="line">chmod 777 frida-server</span><br></pre></td></tr></table></figure>
 
 <p><strong>注意：</strong>最好使用真机，模拟器会因为架构兼容模式从而使得程序报错。</p>
-<p>执行frida-servcer: <code>./freda-server</code></p>
+<p>执行frida-servcer: <code>./frida-server</code></p>
 <p>另起一个终端，配置端口转发： <code>adb forward tcp:27043 tcp:27043</code></p>
 <p>执行<strong>frida-ps -U</strong>测试是否启动成功，如图：</p>
 <p><img src="frida2.PNG" alt=""></p>
 <p>至此，frida环境配置和启动完成。</p>
-<h3 id="二、模块编写"><a href="#二、模块编写" class="headerlink" title="二、模块编写"></a>二、模块编写</h3><p>可以使用JS或Python编写hook脚本，示例可以参考官方文档<a href="https://frida.re/docs/examples/android/。具体编写示例会在后续博客中详述。" target="_blank" rel="noopener">https://frida.re/docs/examples/android/。具体编写示例会在后续博客中详述。</a></p>
+<h3 id="二、模块编写"><a href="#二、模块编写" class="headerlink" title="二、模块编写"></a>二、模块编写</h3><p>可以使用JS或Python编写hook脚本，示例可以参考<a href="https://frida.re/docs/examples/android/" target="_blank" rel="noopener">官方文档</a>。具体编写示例会在后续博客中详述。</p>
 <p>若使用JS hook，只需执行： <code>frida -U -f hookpackagename -l test.js --no-pause</code>。</p>
 <p>若使用Python，则直接执行<code>python3 test.py</code>即可。</p>
 <h2 id="Xposed-Hook配置"><a href="#Xposed-Hook配置" class="headerlink" title="Xposed Hook配置"></a><strong>Xposed Hook</strong>配置</h2><h3 id="一、Xposed安装"><a href="#一、Xposed安装" class="headerlink" title="一、Xposed安装"></a>一、Xposed安装</h3><h4 id="1-1-模拟器"><a href="#1-1-模拟器" class="headerlink" title="1.1 模拟器"></a>1.1 模拟器</h4><p>模拟器采用网易MuMu，Android版本号6.0.1</p>
@@ -660,7 +660,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
