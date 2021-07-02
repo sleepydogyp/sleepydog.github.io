@@ -93,7 +93,7 @@
 <meta property="og:image" content="http://yoursite.com/2021/06/17/Frida-Hook-Android-App-%E7%AC%94%E8%AE%B0/7093882E-ADE7-490a-ACA1-17F8E30F33E3.png">
 <meta property="og:image" content="http://yoursite.com/2021/06/17/Frida-Hook-Android-App-%E7%AC%94%E8%AE%B0/188E3FAA-DAA6-44a7-970A-61D419E2829C.png">
 <meta property="article:published_time" content="2021-06-17T06:19:15.000Z">
-<meta property="article:modified_time" content="2021-06-18T03:55:32.701Z">
+<meta property="article:modified_time" content="2021-06-23T08:32:08.118Z">
 <meta property="article:author" content="clicker">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="hook">
@@ -332,39 +332,11 @@
 <p>Frida框架的具体搭建过程可参考之前的文章<a href="https://sleepydogyp.github.io/2020/03/26/Hook%E6%A1%86%E6%9E%B6%E9%85%8D%E7%BD%AE%E5%A4%87%E5%BF%98%E5%BD%95-copy/#more" target="_blank" rel="noopener">Hook框架配置备忘录</a>。访问官方文档<a href="https://frida.re/docs/android/" target="_blank" rel="noopener">点击这里</a>。</p>
 <hr>
 <p>Frida脚本可以使用Python或JavaScript。Python格式的hook脚本，其主体逻辑部分仍然是由JavaScript写就，示例如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> frida, sys</span><br><span class="line"></span><br><span class="line">def on_message(message, data):</span><br><span class="line"><span class="keyword">if</span> message[<span class="string">'type'</span>] == <span class="string">'send'</span>:</span><br><span class="line">    print(<span class="string">"[*] &#123;0&#125;"</span>.format(message[<span class="string">'payload'</span>]))</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    print(message)</span><br><span class="line">jscode = <span class="string">""</span><span class="string">"</span></span><br><span class="line"><span class="string">Java.perform(function () &#123;</span></span><br><span class="line"><span class="string">// Function to hook is defined here</span></span><br><span class="line"><span class="string">var MainActivity = Java.use('com.example.seccon2015.rock_paper_scissors.MainActivity');</span></span><br><span class="line"><span class="string">// Whenever button is clicked</span></span><br><span class="line"><span class="string">var onClick = MainActivity.onClick;</span></span><br><span class="line"><span class="string">onClick.implementation = function (v) &#123;</span></span><br><span class="line"><span class="string">// Show a message to know that the function got called</span></span><br><span class="line"><span class="string">send('onClick');</span></span><br><span class="line"><span class="string">// Call the original onClick handler</span></span><br><span class="line"><span class="string">onClick.call(this, v);</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">// Set our values after running the original onClick handler</span></span><br><span class="line"><span class="string">this.m.value = 0;</span></span><br><span class="line"><span class="string">this.n.value = 1;</span></span><br><span class="line"><span class="string">this.cnt.value = 999;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">// Log to the console that it's done, and we should have the flag!</span></span><br><span class="line"><span class="string">console.log('Done:' + JSON.stringify(this.cnt));</span></span><br><span class="line"><span class="string">&#125;;</span></span><br><span class="line"><span class="string">&#125;);</span></span><br><span class="line"><span class="string">"</span><span class="string">""</span></span><br><span class="line">process = frida.get_usb_device().attach(<span class="string">'com.example.seccon2015.rock_paper_scissors'</span>)</span><br><span class="line">script = process.create_script(jscode)</span><br><span class="line">script.on(<span class="string">'message'</span>, on_message)</span><br><span class="line">print(<span class="string">'[*] Running CTF'</span>)</span><br><span class="line">script.load()</span><br><span class="line">sys.stdin.read()</span><br></pre></td></tr></table></figure>
+
+
+
 <blockquote>
-<p>import frida, sys</p>
-<p>def on_message(message, data):</p>
-<p>  if message[‘type’] == ‘send’:</p>
-<p>​    print(“[*] {0}”.format(message[‘payload’]))</p>
-<p>  else:</p>
-<p>​    print(message)</p>
-<p>jscode = “””</p>
-<p>Java.perform(function () {</p>
-<p> // Function to hook is defined here</p>
-<p> var MainActivity = Java.use(‘com.example.seccon2015.rock_paper_scissors.MainActivity’);</p>
-<p> // Whenever button is clicked</p>
-<p> var onClick = MainActivity.onClick;</p>
-<p> onClick.implementation = function (v) {</p>
-<p>  // Show a message to know that the function got called</p>
-<p>  send(‘onClick’);</p>
-<p>  // Call the original onClick handler</p>
-<p>  onClick.call(this, v);</p>
-<p>  // Set our values after running the original onClick handler</p>
-<p>  this.m.value = 0;</p>
-<p>  this.n.value = 1;</p>
-<p>  this.cnt.value = 999;</p>
-<p>  // Log to the console that it’s done, and we should have the flag!</p>
-<p>  console.log(‘Done:’ + JSON.stringify(this.cnt));</p>
-<p> };</p>
-<p>});</p>
-<p>“””</p>
-<p>process = frida.get_usb_device().attach(‘com.example.seccon2015.rock_paper_scissors’)</p>
-<p>script = process.create_script(jscode)</p>
-<p>script.on(‘message’, on_message)</p>
-<p>print(‘[*] Running CTF’)</p>
-<p>script.load()</p>
-<p>sys.stdin.read()</p>
 </blockquote>
 <p>使用Python脚本hook不同应用时需要将<code>frida.get_usb_device().attach()</code>语句中的参数替换成将要hook的包名。</p>
 <p><code>jscode</code>变量中的内容即hook逻辑。若使用JS格式的脚本，则直接将<code>Java.perform(function){}</code>模块的代码放入js文档执行即可。</p>
@@ -388,7 +360,6 @@
 <p>}</p>
 </blockquote>
 <p>若原方法有返回值，那么修改后需要确保方法有相应类型的返回值。</p>
-<p>PS: Handler类hook需谨慎，这里只作为示例，实际使用的话会陷入死循环。</p>
 <p>hook构造方法时，方法名为<code>$init</code>，可根据实际需要修改参数类型：</p>
 <blockquote>
 <p>ClassName.$init.overload(‘[B’).implementation=function(param){   </p>
@@ -420,23 +391,8 @@
 <p>可以看到首先调用了m()方法，m()中适配了一些机型的快捷方式，略过。然后是一个判断语句，判断为true,就执行<code>this.G.sendEmptyMessageDelayed(1, 5000);</code>语句，意思是延迟5秒发送一个空消息。若为false，就执行后续代码，即接收并在页面中展示广告信息。</p>
 <p>那么我们就考虑修改b()方法，直接执行<code>this.G.sendEmptyMessageDelayed(1, 5000);</code>语句。</p>
 <p>hook代码如下：</p>
-<blockquote>
-<p>setImmediate(function() {</p>
-<p>  Java.perform(function(){</p>
-<p>​    var classLoader = Java.use(“com.meishichina.android.activity.WelcomeActivity”);</p>
-<p>​    var handlerName = “com.meishichina.android.activity.WelcomeActivity$b”;</p>
-<p>​    classLoader.b.overload(“boolean”).implementation = function(z2){</p>
-<p>​      Java.choose(handlerName, {</p>
-<p>​        onMatch:function(instance){</p>
-<p>​          instance.sendEmptyMessageDelayed(1, 1);</p>
-<p>​        }</p>
-<p>​      });</p>
-<p>​      console.log(“com.meishichina.android.activity.WelcomeActivity -&gt; b”);</p>
-<p>​      return;</p>
-<p>​    };</p>
-<p>  });</p>
-<p>});</p>
-</blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">setImmediate(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	Java.perform(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">   	<span class="keyword">var</span> classLoader = Java.use(<span class="string">"com.meishichina.android.activity.WelcomeActivity"</span>);</span><br><span class="line"></span><br><span class="line">   	<span class="keyword">var</span> handlerName = <span class="string">"com.meishichina.android.activity.WelcomeActivity$b"</span>;</span><br><span class="line">   	 classLoader.b.overload(<span class="string">"boolean"</span>).implementation = <span class="function"><span class="keyword">function</span>(<span class="params">z2</span>)</span>&#123;</span><br><span class="line">      	Java.choose(handlerName, &#123;</span><br><span class="line">       		onMatch:<span class="function"><span class="keyword">function</span>(<span class="params">instance</span>)</span>&#123;</span><br><span class="line">         		instance.sendEmptyMessageDelayed(<span class="number">1</span>, <span class="number">1</span>);</span><br><span class="line">       		&#125;,</span><br><span class="line">			onComplete: <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">         	   <span class="built_in">console</span>.log(<span class="string">"[*] class enuemration complete"</span>);</span><br><span class="line">        	&#125;</span><br><span class="line"></span><br><span class="line">     	&#125;);</span><br><span class="line">      	<span class="built_in">console</span>.log(<span class="string">"com.meishichina.android.activity.WelcomeActivity -&gt; b"</span>);</span><br><span class="line">   		&#125;;</span><br><span class="line">	&#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
 <p>打开cmd窗口，执行命令：</p>
 <blockquote>
 <p>frida -U -f “com.jingdian.tianxiameishi.android” -l splashActivity_hook.js –no-pause</p>
@@ -492,6 +448,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/07/02/Frida-Hook-Android-APP%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/" rel="prev" title="Frida Hook Android APP笔记（二）">
+                Frida Hook Android APP笔记（二） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -559,7 +519,7 @@
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
